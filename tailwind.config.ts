@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,13 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom color palette from PRD
+				buzzer: {
+					primary: '#2563EB',    // Primary blue
+					secondary: '#4B5563',  // Secondary gray
+					success: '#10B981',    // Success green
+					error: '#EF4444',      // Error red
 				}
 			},
 			borderRadius: {
