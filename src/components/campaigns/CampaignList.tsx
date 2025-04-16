@@ -4,6 +4,7 @@ import { Edit, Eye, Trash2, BarChart, ThumbsUp, MessageSquare } from 'lucide-rea
 import { useData } from '@/context/DataContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Tooltip,
   TooltipContent,
@@ -38,87 +39,90 @@ const CampaignList = ({ folderId }: CampaignListProps) => {
   
   return (
     <>
-      <div className="space-y-3">
-        {campaigns.map((campaign) => (
-          <div 
-            key={campaign.id} 
-            className="p-3 rounded-md border bg-card text-card-foreground hover:shadow-sm transition-shadow"
-          >
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <h4 className="font-medium text-sm">{campaign.name}</h4>
-                <p className="text-xs text-muted-foreground">Topic: {campaign.topic}</p>
+      <ScrollArea className="h-[250px] pr-3">
+        <div className="space-y-3">
+          {campaigns.map((campaign) => (
+            <div 
+              key={campaign.id} 
+              className="p-3 rounded-md border bg-card text-card-foreground hover:shadow-sm transition-shadow"
+            >
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h4 className="font-medium text-sm">{campaign.name}</h4>
+                  <p className="text-xs text-muted-foreground">Topic: {campaign.topic}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Narrative: {campaign.narrative}</p>
+                </div>
+                <div className="flex gap-1">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7"
+                          onClick={() => setViewCampaign(campaign)}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>View details</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7"
+                          onClick={() => setEditCampaign(campaign)}
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Edit campaign</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-7 w-7 text-destructive"
+                          onClick={() => setDeleteCampaign(campaign)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Delete campaign</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </div>
-              <div className="flex gap-1">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-7 w-7"
-                        onClick={() => setViewCampaign(campaign)}
-                      >
-                        <Eye className="h-3.5 w-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>View details</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-7 w-7"
-                        onClick={() => setEditCampaign(campaign)}
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Edit campaign</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-7 w-7 text-destructive"
-                        onClick={() => setDeleteCampaign(campaign)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Delete campaign</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              
+              <div className="grid grid-cols-3 gap-2 mt-2">
+                <div className="flex items-center text-xs gap-1 text-muted-foreground">
+                  <Badge variant="outline" className={`px-1.5 ${getSentimentColor(campaign.sentiment)}`}>
+                    {campaign.sentiment}
+                  </Badge>
+                </div>
+                <div className="flex items-center text-xs gap-1 text-muted-foreground justify-center">
+                  <ThumbsUp className="h-3 w-3" />
+                  <span>{campaign.engagement.likes}</span>
+                  <MessageSquare className="h-3 w-3 ml-2" />
+                  <span>{campaign.engagement.comments}</span>
+                </div>
+                <div className="flex items-center text-xs gap-1 text-muted-foreground justify-end">
+                  <span>Bots: {campaign.bots.length}</span>
+                </div>
               </div>
             </div>
-            
-            <div className="grid grid-cols-3 gap-2 mt-2">
-              <div className="flex items-center text-xs gap-1 text-muted-foreground">
-                <Badge variant="outline" className={`px-1.5 ${getSentimentColor(campaign.sentiment)}`}>
-                  {campaign.sentiment}
-                </Badge>
-              </div>
-              <div className="flex items-center text-xs gap-1 text-muted-foreground justify-center">
-                <ThumbsUp className="h-3 w-3" />
-                <span>{campaign.engagement.likes}</span>
-                <MessageSquare className="h-3 w-3 ml-2" />
-                <span>{campaign.engagement.comments}</span>
-              </div>
-              <div className="flex items-center text-xs gap-1 text-muted-foreground justify-end">
-                <span>Bots: {campaign.bots.length}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </ScrollArea>
       
       {viewCampaign && (
         <CampaignDetailDialog

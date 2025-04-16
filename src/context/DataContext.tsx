@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   Bot, 
@@ -10,9 +9,7 @@ import {
 } from '../types/data';
 import { useToast } from '@/components/ui/use-toast';
 
-// Sample data for demonstration
 const generateSampleData = () => {
-  // Generate some sample bots
   const bots: Bot[] = [
     {
       id: '1',
@@ -37,7 +34,6 @@ const generateSampleData = () => {
     }
   ];
 
-  // Generate some sample campaign folders
   const campaignFolders: CampaignFolder[] = [
     {
       id: '1',
@@ -55,6 +51,39 @@ const generateSampleData = () => {
           createdAt: '2025-03-20T09:30:00Z',
           engagement: { likes: 1250, shares: 430, comments: 175 },
           sentimentAnalysis: { positive: 70, negative: 10, neutral: 20 }
+        },
+        {
+          id: '4',
+          name: 'Smartphone X Pro Campaign',
+          topic: 'Professional usage scenarios',
+          narrative: 'Showcasing how professionals use the new Smartphone X Pro in their daily work',
+          sentiment: 'positive',
+          bots: ['2'],
+          createdAt: '2025-03-22T11:15:00Z',
+          engagement: { likes: 980, shares: 350, comments: 145 },
+          sentimentAnalysis: { positive: 75, negative: 5, neutral: 20 }
+        },
+        {
+          id: '5',
+          name: 'Smartphone X for Creators',
+          topic: 'Content creation capabilities',
+          narrative: 'Demonstrating how creators can leverage the new camera system for professional content',
+          sentiment: 'positive',
+          bots: ['1', '3'],
+          createdAt: '2025-03-24T13:40:00Z',
+          engagement: { likes: 1420, shares: 520, comments: 210 },
+          sentimentAnalysis: { positive: 80, negative: 5, neutral: 15 }
+        },
+        {
+          id: '6',
+          name: 'Smartphone X Battery Life',
+          topic: 'All-day battery performance',
+          narrative: 'Explaining how the new battery technology enables extended usage without charging',
+          sentiment: 'neutral',
+          bots: ['2'],
+          createdAt: '2025-03-26T10:20:00Z',
+          engagement: { likes: 890, shares: 280, comments: 120 },
+          sentimentAnalysis: { positive: 65, negative: 10, neutral: 25 }
         }
       ]
     },
@@ -74,12 +103,44 @@ const generateSampleData = () => {
           createdAt: '2025-03-28T13:45:00Z',
           engagement: { likes: 950, shares: 620, comments: 230 },
           sentimentAnalysis: { positive: 50, negative: 20, neutral: 30 }
+        },
+        {
+          id: '7',
+          name: 'Renewable Energy Push',
+          topic: 'Clean energy transition',
+          narrative: 'Promoting the benefits and necessity of switching to renewable energy sources',
+          sentiment: 'positive',
+          bots: ['1'],
+          createdAt: '2025-03-30T09:30:00Z',
+          engagement: { likes: 1150, shares: 580, comments: 195 },
+          sentimentAnalysis: { positive: 70, negative: 5, neutral: 25 }
+        },
+        {
+          id: '8',
+          name: 'Forest Conservation',
+          topic: 'Preserving forest ecosystems',
+          narrative: 'Highlighting the critical role of forests in biodiversity and climate regulation',
+          sentiment: 'neutral',
+          bots: ['3'],
+          createdAt: '2025-04-01T14:20:00Z',
+          engagement: { likes: 870, shares: 490, comments: 165 },
+          sentimentAnalysis: { positive: 60, negative: 10, neutral: 30 }
+        },
+        {
+          id: '9',
+          name: 'Sustainable Living',
+          topic: 'Everyday eco-friendly practices',
+          narrative: 'Showcasing simple ways individuals can reduce their environmental footprint',
+          sentiment: 'positive',
+          bots: ['1', '3'],
+          createdAt: '2025-04-03T11:45:00Z',
+          engagement: { likes: 1080, shares: 640, comments: 210 },
+          sentimentAnalysis: { positive: 75, negative: 5, neutral: 20 }
         }
       ]
     }
   ];
 
-  // Generate some sample prompts
   const prompts: Prompt[] = [
     {
       id: '1',
@@ -109,7 +170,6 @@ const generateSampleData = () => {
     }
   ];
 
-  // Generate metrics
   const dashboardMetrics: DashboardMetrics = {
     botCount: bots.length,
     terminatedBotCount: 1,
@@ -169,7 +229,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [dashboardMetrics, setDashboardMetrics] = useState<DashboardMetrics>(sampleData.dashboardMetrics);
   const { toast } = useToast();
 
-  // Bot CRUD operations
   const addBot = (bot: Omit<Bot, 'id' | 'createdAt'>) => {
     const newBot: Bot = {
       ...bot,
@@ -177,7 +236,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       createdAt: new Date().toISOString()
     };
     setBots(prevBots => [...prevBots, newBot]);
-    // Update metrics
     setDashboardMetrics(prevMetrics => ({
       ...prevMetrics,
       botCount: prevMetrics.botCount + 1
@@ -201,7 +259,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!botToDelete) return;
     
     setBots(prevBots => prevBots.filter(b => b.id !== id));
-    // Update metrics
     setDashboardMetrics(prevMetrics => ({
       ...prevMetrics,
       botCount: prevMetrics.botCount - 1,
@@ -213,7 +270,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // Campaign Folder CRUD operations
   const addCampaignFolder = (folder: Omit<CampaignFolder, 'id' | 'createdAt' | 'campaigns'>) => {
     const newFolder: CampaignFolder = {
       ...folder,
@@ -249,7 +305,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // Campaign CRUD operations
   const addCampaign = (folderId: string, campaign: Omit<Campaign, 'id' | 'createdAt' | 'engagement' | 'sentimentAnalysis'>) => {
     const newCampaign: Campaign = {
       ...campaign,
@@ -271,7 +326,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
     );
     
-    // Update bot status for assigned bots
     setBots(prevBots => 
       prevBots.map(bot => {
         if (campaign.bots.includes(bot.id)) {
@@ -302,7 +356,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
     );
     
-    // Update bot status for assigned bots
     setBots(prevBots => 
       prevBots.map(bot => {
         if (campaign.bots.includes(bot.id)) {
@@ -319,13 +372,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteCampaign = (folderId: string, campaignId: string) => {
-    // Find the campaign to delete
     const folder = campaignFolders.find(f => f.id === folderId);
     const campaignToDelete = folder?.campaigns.find(c => c.id === campaignId);
     
     if (!folder || !campaignToDelete) return;
     
-    // Update campaign folders
     setCampaignFolders(prevFolders => 
       prevFolders.map(folder => {
         if (folder.id === folderId) {
@@ -338,7 +389,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       })
     );
     
-    // Update bot status for assigned bots (set to idle if not assigned to other campaigns)
     setBots(prevBots => {
       const campaignBotIds = campaignToDelete.bots;
       const otherCampaigns = campaignFolders
@@ -347,7 +397,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       return prevBots.map(bot => {
         if (campaignBotIds.includes(bot.id)) {
-          // Check if bot is assigned to any other campaign
           const isAssignedElsewhere = otherCampaigns.some(c => c.bots.includes(bot.id));
           return { ...bot, status: isAssignedElsewhere ? 'assigned' : 'idle' };
         }
@@ -361,7 +410,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // Prompt CRUD operations
   const addPrompt = (prompt: Omit<Prompt, 'id' | 'createdAt'>) => {
     const newPrompt: Prompt = {
       ...prompt,
