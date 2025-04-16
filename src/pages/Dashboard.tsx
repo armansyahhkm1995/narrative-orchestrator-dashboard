@@ -33,7 +33,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <MetricsCard
           title="Total Bots"
           value={bots.length}
@@ -55,12 +55,29 @@ const Dashboard = () => {
           icon={<ThumbsUp className="h-4 w-4" />}
           trend={{ value: 12, isPositive: true }}
         />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <MetricsCard
-          title="Sentiment Score"
-          value={`${dashboardMetrics.sentimentOverview.positive}%`}
-          description="Positive sentiment"
+          title="Likes"
+          value={dashboardMetrics.engagementTotal.likes}
+          description="Total likes across campaigns"
+          icon={<ThumbsUp className="h-4 w-4" />}
+          trend={{ value: 8, isPositive: true }}
+        />
+        <MetricsCard
+          title="Shares"
+          value={dashboardMetrics.engagementTotal.shares}
+          description="Total shares across campaigns"
+          icon={<Share2 className="h-4 w-4" />}
+          trend={{ value: 15, isPositive: true }}
+        />
+        <MetricsCard
+          title="Comments"
+          value={dashboardMetrics.engagementTotal.comments}
+          description="Total comments across campaigns"
           icon={<MessageSquare className="h-4 w-4" />}
-          trend={{ value: 3, isPositive: true }}
+          trend={{ value: 6, isPositive: true }}
         />
       </div>
 
