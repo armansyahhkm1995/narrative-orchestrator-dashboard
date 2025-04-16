@@ -30,9 +30,9 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { MoreHorizontal, Plus, Edit, Trash2, ExternalLink, Check, X } from 'lucide-react';
+import { MoreHorizontal, Plus, Edit, Trash2, ExternalLink, Check, X, Bot } from 'lucide-react';
 import { useData } from '@/context/DataContext';
-import { Bot, SocialMediaPlatform } from '@/types/data';
+import { Bot as BotType, SocialMediaPlatform } from '@/types/data';
 import { useToast } from '@/components/ui/use-toast';
 
 const BotManagement = () => {
@@ -42,11 +42,19 @@ const BotManagement = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
-  const [currentBot, setCurrentBot] = useState<Bot | null>(null);
+  const [currentBot, setCurrentBot] = useState<BotType | null>(null);
   
   // Form state
   const [botName, setBotName] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<SocialMediaPlatform[]>([]);
+  const [socialMediaLinks, setSocialMediaLinks] = useState<Record<SocialMediaPlatform, string>>({
+    X: '',
+    Instagram: '',
+    Facebook: '',
+    TikTok: '',
+    YouTube: '',
+    Blog: ''
+  });
 
   // Platform options
   const platforms: SocialMediaPlatform[] = ['X', 'Instagram', 'Facebook', 'TikTok', 'YouTube', 'Blog'];
@@ -61,15 +69,30 @@ const BotManagement = () => {
       return;
     }
 
+    // Collect only the links for selected platforms
+    const links: Record<string, string> = {};
+    selectedPlatforms.forEach(platform => {
+      links[platform] = socialMediaLinks[platform];
+    });
+
     addBot({
       name: botName,
       status: 'idle',
-      platforms: selectedPlatforms
+      platforms: selectedPlatforms,
+      socialMediaLinks: links
     });
 
     // Reset form
     setBotName('');
     setSelectedPlatforms([]);
+    setSocialMediaLinks({
+      X: '',
+      Instagram: '',
+      Facebook: '',
+      TikTok: '',
+      YouTube: '',
+      Blog: ''
+    });
     setIsAddDialogOpen(false);
   };
 
@@ -83,15 +106,30 @@ const BotManagement = () => {
       return;
     }
 
+    // Collect only the links for selected platforms
+    const links: Record<string, string> = {};
+    selectedPlatforms.forEach(platform => {
+      links[platform] = socialMediaLinks[platform];
+    });
+
     updateBot({
       ...currentBot,
       name: botName,
-      platforms: selectedPlatforms
+      platforms: selectedPlatforms,
+      socialMediaLinks: links
     });
 
     // Reset form
     setBotName('');
     setSelectedPlatforms([]);
+    setSocialMediaLinks({
+      X: '',
+      Instagram: '',
+      Facebook: '',
+      TikTok: '',
+      YouTube: '',
+      Blog: ''
+    });
     setCurrentBot(null);
     setIsEditDialogOpen(false);
   };
@@ -104,21 +142,47 @@ const BotManagement = () => {
     setIsDeleteDialogOpen(false);
   };
 
-  const openEditDialog = (bot: Bot) => {
+  const openEditDialog = (bot: BotType) => {
     setCurrentBot(bot);
     setBotName(bot.name);
     setSelectedPlatforms([...bot.platforms]);
+    
+    // Initialize links from bot data or empty strings
+    const initialLinks: Record<SocialMediaPlatform, string> = {
+      X: '',
+      Instagram: '',
+      Facebook: '',
+      TikTok: '',
+      YouTube: '',
+      Blog: ''
+    };
+    
+    // If bot has social media links, use them
+    if (bot.socialMediaLinks) {
+      bot.platforms.forEach(platform => {
+        initialLinks[platform] = bot.socialMediaLinks?.[platform] || '';
+      });
+    }
+    
+    setSocialMediaLinks(initialLinks);
     setIsEditDialogOpen(true);
   };
 
-  const openDeleteDialog = (bot: Bot) => {
+  const openDeleteDialog = (bot: BotType) => {
     setCurrentBot(bot);
     setIsDeleteDialogOpen(true);
   };
 
-  const openDetailDialog = (bot: Bot) => {
+  const openDetailDialog = (bot: BotType) => {
     setCurrentBot(bot);
     setIsDetailDialogOpen(true);
+  };
+
+  const handleVerifyNow = (platform: string) => {
+    toast({
+      title: "Verification Started",
+      description: `Starting verification for ${platform}...`,
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -128,6 +192,13 @@ const BotManagement = () => {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const handleSocialMediaLinkChange = (platform: SocialMediaPlatform, value: string) => {
+    setSocialMediaLinks(prev => ({
+      ...prev,
+      [platform]: value
+    }));
   };
 
   return (
@@ -160,22 +231,31 @@ const BotManagement = () => {
               </div>
               
               <div className="space-y-2">
-                <Label>Select Platforms</Label>
-                <div className="grid grid-cols-2 gap-2">
+                <Label>Bot Social Media Links</Label>
+                <div className="space-y-3">
                   {platforms.map((platform) => (
-                    <div key={platform} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`platform-${platform}`}
-                        checked={selectedPlatforms.includes(platform)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedPlatforms([...selectedPlatforms, platform]);
-                          } else {
-                            setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
-                          }
-                        }}
-                      />
-                      <Label htmlFor={`platform-${platform}`}>{platform}</Label>
+                    <div key={platform} className="flex flex-col space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`platform-${platform}`}
+                          checked={selectedPlatforms.includes(platform)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedPlatforms([...selectedPlatforms, platform]);
+                            } else {
+                              setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
+                            }
+                          }}
+                        />
+                        <Label htmlFor={`platform-${platform}`}>{platform}</Label>
+                      </div>
+                      {selectedPlatforms.includes(platform) && (
+                        <Input
+                          placeholder={`${platform} profile link`}
+                          value={socialMediaLinks[platform]}
+                          onChange={(e) => handleSocialMediaLinkChange(platform, e.target.value)}
+                        />
+                      )}
                     </div>
                   ))}
                 </div>
@@ -285,22 +365,31 @@ const BotManagement = () => {
             </div>
             
             <div className="space-y-2">
-              <Label>Select Platforms</Label>
-              <div className="grid grid-cols-2 gap-2">
+              <Label>Bot Social Media Links</Label>
+              <div className="space-y-3">
                 {platforms.map((platform) => (
-                  <div key={platform} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`edit-platform-${platform}`}
-                      checked={selectedPlatforms.includes(platform)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedPlatforms([...selectedPlatforms, platform]);
-                        } else {
-                          setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
-                        }
-                      }}
-                    />
-                    <Label htmlFor={`edit-platform-${platform}`}>{platform}</Label>
+                  <div key={platform} className="flex flex-col space-y-1">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`edit-platform-${platform}`}
+                        checked={selectedPlatforms.includes(platform)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedPlatforms([...selectedPlatforms, platform]);
+                          } else {
+                            setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
+                          }
+                        }}
+                      />
+                      <Label htmlFor={`edit-platform-${platform}`}>{platform}</Label>
+                    </div>
+                    {selectedPlatforms.includes(platform) && (
+                      <Input
+                        placeholder={`${platform} profile link`}
+                        value={socialMediaLinks[platform]}
+                        onChange={(e) => handleSocialMediaLinkChange(platform, e.target.value)}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
@@ -379,16 +468,31 @@ const BotManagement = () => {
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-2">Validation Status</h3>
                 <div className="space-y-2">
-                  {currentBot.platforms.map((platform) => (
-                    <div key={platform} className="flex items-center">
-                      {Math.random() > 0.3 ? (
-                        <Check className="h-4 w-4 text-green-500 mr-2" />
-                      ) : (
-                        <X className="h-4 w-4 text-red-500 mr-2" />
-                      )}
-                      <span>{platform} account {Math.random() > 0.3 ? 'validated' : 'invalid'}</span>
-                    </div>
-                  ))}
+                  {currentBot.platforms.map((platform) => {
+                    const isValid = Math.random() > 0.3;
+                    return (
+                      <div key={platform} className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          {isValid ? (
+                            <Check className="h-4 w-4 text-green-500 mr-2" />
+                          ) : (
+                            <X className="h-4 w-4 text-[#ea384c] mr-2" />
+                          )}
+                          <span>{platform} account {isValid ? 'validated' : 'invalid'}</span>
+                        </div>
+                        {!isValid && (
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="bg-[#9b87f5] text-white hover:bg-[#8a71f1]"
+                            onClick={() => handleVerifyNow(platform)}
+                          >
+                            Verify now
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

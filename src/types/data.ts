@@ -6,6 +6,7 @@ export interface Bot {
   status: 'idle' | 'assigned';
   platforms: SocialMediaPlatform[];
   createdAt: string;
+  socialMediaLinks?: Record<string, string>;
 }
 
 export type SocialMediaPlatform = 'X' | 'Instagram' | 'Facebook' | 'TikTok' | 'YouTube' | 'Blog';

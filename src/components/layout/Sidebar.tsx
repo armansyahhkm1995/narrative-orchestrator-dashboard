@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
+  Bot,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/context/AuthContext';
@@ -59,7 +60,10 @@ const Sidebar: React.FC = () => {
     >
       <div className="p-4 flex items-center justify-between border-b border-gray-200">
         {!collapsed && (
-          <h1 className="text-xl font-bold text-buzzer-primary">Buzzer</h1>
+          <div className="flex items-center">
+            <Bot className="h-6 w-6 text-buzzer-primary mr-2" />
+            <h1 className="text-xl font-bold text-buzzer-primary">Avatar Management</h1>
+          </div>
         )}
         <Button
           variant="ghost"
