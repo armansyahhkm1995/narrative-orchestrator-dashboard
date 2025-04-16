@@ -1,11 +1,18 @@
 
-import { BarChart3, Users, ThumbsUp, MessageSquare, Share2 } from 'lucide-react';
+import { BarChart3, Users, ThumbsUp, MessageSquare, Share2, FileText, FileCsv } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import MetricsCard from '@/components/dashboard/MetricsCard';
 import EngagementChart from '@/components/dashboard/EngagementChart';
 import SentimentChart from '@/components/dashboard/SentimentChart';
 import RecentActivity from '@/components/dashboard/RecentActivity';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const { bots, campaignFolders, dashboardMetrics } = useData();
@@ -22,14 +29,38 @@ const Dashboard = () => {
     dashboardMetrics.engagementTotal.shares + 
     dashboardMetrics.engagementTotal.comments;
 
+  const handleGeneratePDF = () => {
+    toast.success("Generating PDF report...");
+    // Actual PDF generation logic would go here
+  };
+
+  const handleGenerateCSV = () => {
+    toast.success("Generating CSV report...");
+    // Actual CSV generation logic would go here
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <div className="flex items-center space-x-2">
-          <Button className="bg-buzzer-primary">
-            Generate Report
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="bg-buzzer-primary">
+                Generate Report
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-white">
+              <DropdownMenuItem onClick={handleGeneratePDF} className="cursor-pointer">
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Generate as PDF</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleGenerateCSV} className="cursor-pointer">
+                <FileCsv className="mr-2 h-4 w-4" />
+                <span>Generate as CSV</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

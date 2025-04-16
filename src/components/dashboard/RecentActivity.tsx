@@ -1,12 +1,16 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
+// Enhanced activity data with folder, topic, and narrative information
 const recentActivities = [
   {
     id: 1,
     bot: 'EcoWarrior',
     action: 'Posted on X',
     campaign: 'Ocean Cleanup',
+    folder: 'Environmental Initiatives',
+    topic: 'Ocean Pollution',
+    narrative: 'Raise awareness about plastic pollution',
     time: '10 minutes ago'
   },
   {
@@ -14,6 +18,9 @@ const recentActivities = [
     bot: 'TechEnthusiast',
     action: 'Posted on YouTube',
     campaign: 'Smartphone X Release',
+    folder: 'Tech Products',
+    topic: 'New Technology',
+    narrative: 'Highlight innovative features',
     time: '45 minutes ago'
   },
   {
@@ -21,6 +28,9 @@ const recentActivities = [
     bot: 'FitnessFanatic',
     action: 'Posted on Instagram',
     campaign: 'Summer Fitness Challenge',
+    folder: 'Health & Wellness',
+    topic: 'Fitness Trends',
+    narrative: 'Motivate healthy lifestyle choices',
     time: '1 hour ago'
   },
   {
@@ -28,6 +38,9 @@ const recentActivities = [
     bot: 'EcoWarrior',
     action: 'Received 50+ likes on Facebook',
     campaign: 'Ocean Cleanup',
+    folder: 'Environmental Initiatives',
+    topic: 'Ocean Pollution',
+    narrative: 'Raise awareness about plastic pollution',
     time: '3 hours ago'
   },
   {
@@ -35,6 +48,9 @@ const recentActivities = [
     bot: 'TechEnthusiast',
     action: 'Received 10+ comments on Blog',
     campaign: 'Smartphone X Release',
+    folder: 'Tech Products',
+    topic: 'New Technology',
+    narrative: 'Highlight innovative features',
     time: '5 hours ago'
   }
 ];
@@ -55,7 +71,7 @@ const RecentActivity = () => {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium">{activity.action}</p>
-                <div className="flex items-center justify-between mt-1">
+                <div className="grid grid-cols-2 gap-2 mt-1">
                   <div className="flex items-center">
                     <span className="text-xs text-buzzer-secondary mr-2">Bot:</span>
                     <span className="text-xs font-medium">{activity.bot}</span>
@@ -64,6 +80,18 @@ const RecentActivity = () => {
                     <span className="text-xs text-buzzer-secondary mr-2">Campaign:</span>
                     <span className="text-xs font-medium">{activity.campaign}</span>
                   </div>
+                  <div className="flex items-center">
+                    <span className="text-xs text-buzzer-secondary mr-2">Folder:</span>
+                    <span className="text-xs font-medium">{activity.folder}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-xs text-buzzer-secondary mr-2">Topic:</span>
+                    <span className="text-xs font-medium">{activity.topic}</span>
+                  </div>
+                </div>
+                <div className="mt-1">
+                  <span className="text-xs text-buzzer-secondary mr-2">Narrative:</span>
+                  <span className="text-xs">{activity.narrative}</span>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
               </div>
