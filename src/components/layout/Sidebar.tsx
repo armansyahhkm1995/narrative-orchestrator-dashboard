@@ -6,7 +6,6 @@ import {
   BarChart3,
   Users,
   FolderKanban,
-  MessageSquareText,
   Settings,
   LogOut,
   ChevronLeft,
@@ -77,7 +76,6 @@ const Sidebar: React.FC = () => {
         <SidebarItem icon={Home} label="Dashboard" to="/" collapsed={collapsed} />
         <SidebarItem icon={Users} label="Bot Management" to="/bots" collapsed={collapsed} />
         <SidebarItem icon={FolderKanban} label="Campaigns" to="/campaigns" collapsed={collapsed} />
-        <SidebarItem icon={MessageSquareText} label="Prompts" to="/prompts" collapsed={collapsed} />
         <SidebarItem icon={Settings} label="Settings" to="/settings" collapsed={collapsed} />
       </div>
 
