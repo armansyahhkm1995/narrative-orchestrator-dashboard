@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthState } from '../types/auth';
 import { useToast } from '@/components/ui/use-toast';
@@ -11,7 +10,14 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock user data - in a real app, this would come from an API
+// Mock user data for auto-login
+const defaultUser: User = {
+  id: '1',
+  name: 'Demo User',
+  email: 'demo@example.com'
+};
+
+// Mock users array - keeping this for reference but not using it for authentication now
 const mockUsers = [
   {
     id: '1',
@@ -22,106 +28,40 @@ const mockUsers = [
 ];
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Initialize with authenticated state by default
   const [authState, setAuthState] = useState<AuthState>({
-    user: null,
-    isAuthenticated: false,
-    isLoading: true
+    user: defaultUser,
+    isAuthenticated: true,
+    isLoading: false
   });
   const { toast } = useToast();
 
-  useEffect(() => {
-    // Check for existing session in localStorage
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser) as User;
-        setAuthState({
-          user,
-          isAuthenticated: true,
-          isLoading: false
-        });
-      } catch (error) {
-        console.error('Failed to parse stored user:', error);
-        localStorage.removeItem('user');
-        setAuthState({ ...authState, isLoading: false });
-      }
-    } else {
-      setAuthState({ ...authState, isLoading: false });
-    }
-  }, []);
-
+  // Keeping the login function but making it a no-op that always succeeds
   const login = async (email: string, password: string): Promise<void> => {
-    // This is a mock implementation - in a real app, you'd call an API
-    const user = mockUsers.find(u => u.email === email && u.password === password);
+    // Always authenticate with the default user regardless of credentials
+    toast({
+      title: "Auto-login active",
+      description: "Authentication checks are bypassed for demo purposes.",
+    });
     
-    if (user) {
-      const { password, ...userWithoutPassword } = user;
-      localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-      setAuthState({
-        user: userWithoutPassword,
-        isAuthenticated: true,
-        isLoading: false
-      });
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${userWithoutPassword.name}!`,
-      });
-    } else {
-      toast({
-        title: "Login failed",
-        description: "Invalid email or password. Please try again.",
-        variant: "destructive"
-      });
-      throw new Error('Invalid credentials');
-    }
+    // No need to set state as we're already authenticated
   };
 
   const signup = async (name: string, email: string, password: string): Promise<void> => {
-    // This is a mock implementation - in a real app, you'd call an API
-    const existingUser = mockUsers.find(u => u.email === email);
-    if (existingUser) {
-      toast({
-        title: "Signup failed",
-        description: "Email already in use. Please use a different email or try logging in.",
-        variant: "destructive"
-      });
-      throw new Error('Email already in use');
-    }
-
-    const newUser = {
-      id: String(mockUsers.length + 1),
-      name,
-      email,
-      password
-    };
-
-    mockUsers.push(newUser);
-    
-    const { password: _, ...userWithoutPassword } = newUser;
-    localStorage.setItem('user', JSON.stringify(userWithoutPassword));
-    
-    setAuthState({
-      user: userWithoutPassword,
-      isAuthenticated: true,
-      isLoading: false
-    });
-    
+    // Always authenticate with the default user regardless of credentials
     toast({
-      title: "Signup successful",
-      description: `Welcome, ${name}!`,
+      title: "Auto-signup active",
+      description: "Authentication checks are bypassed for demo purposes.",
     });
+    
+    // No need to set state as we're already authenticated
   };
 
   const logout = () => {
-    localStorage.removeItem('user');
-    setAuthState({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false
-    });
+    // No actual logout functionality - just show a toast
     toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
+      title: "Logout disabled",
+      description: "Authentication is bypassed for demo purposes.",
     });
   };
 

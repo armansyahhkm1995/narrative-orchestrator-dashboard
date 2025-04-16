@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
@@ -9,6 +8,7 @@ import AuthPages from '@/pages/auth/AuthPages';
 const Layout: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
+  // Keeping the loading check for completeness
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -19,7 +19,20 @@ const Layout: React.FC = () => {
     );
   }
 
+  // Comment out this condition to always show the main layout
+  // Instead, add a way to toggle between auth pages and main dashboard for testing
+  
+  // Uncomment the next block to test the auth pages
+  /*
   if (!isAuthenticated) {
+    return <AuthPages />;
+  }
+  */
+  
+  // For demonstration purposes, let's add a button to view the auth pages
+  const showAuthPages = false; // Set to true to see auth pages, false to see dashboard
+  
+  if (showAuthPages) {
     return <AuthPages />;
   }
 
