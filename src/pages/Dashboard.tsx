@@ -1,5 +1,4 @@
-
-import { BarChart3, Users, ThumbsUp, MessageSquare, Share2, FileText, FileCsv } from 'lucide-react';
+import { BarChart3, Users, ThumbsUp, MessageSquare, Share2, FileText, Files } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import MetricsCard from '@/components/dashboard/MetricsCard';
 import EngagementChart from '@/components/dashboard/EngagementChart';
@@ -56,7 +55,7 @@ const Dashboard = () => {
                 <span>Generate as PDF</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleGenerateCSV} className="cursor-pointer">
-                <FileCsv className="mr-2 h-4 w-4" />
+                <Files className="mr-2 h-4 w-4" />
                 <span>Generate as CSV</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
