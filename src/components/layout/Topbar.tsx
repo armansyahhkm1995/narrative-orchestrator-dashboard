@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/context/AuthContext';
+import { Link } from 'react-router-dom';
 
 const Topbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -45,6 +46,10 @@ const Topbar: React.FC = () => {
                 <span className="text-xs text-gray-500">FitnessFanatic bot is now available</span>
               </DropdownMenuItem>
             </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild className="cursor-pointer justify-center text-buzzer-primary font-medium py-2">
+              <Link to="/notifications">View all notifications</Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         
@@ -60,8 +65,8 @@ const Topbar: React.FC = () => {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer" onClick={() => window.location.href = '/settings'}>
-              Settings
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link to="/settings">Settings</Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" onClick={logout}>
               Log out
