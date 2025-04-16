@@ -103,7 +103,7 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
               </div>
               
               <div>
-                <h3 className="text-base font-medium">Narrative</h3>
+                <h3 className="text-base font-medium">Narrative Diversion</h3>
                 <p className="text-muted-foreground whitespace-pre-wrap">
                   {campaign.narrative}
                 </p>

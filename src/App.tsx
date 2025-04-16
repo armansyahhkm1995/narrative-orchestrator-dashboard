@@ -27,7 +27,7 @@ const App = () => (
                 <Route index element={<Dashboard />} />
                 <Route path="/bots" element={<BotManagement />} />
                 <Route path="/campaigns" element={<Campaigns />} />
-                {/* More routes to be added */}
+                {/* Prompts management is now integrated into Campaigns */}
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
