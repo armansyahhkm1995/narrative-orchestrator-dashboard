@@ -9,6 +9,7 @@ import { DataProvider } from "./context/DataContext";
 import Layout from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import BotManagement from "./pages/BotManagement";
+import Campaigns from "./pages/Campaigns";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
               <Route path="/" element={<Layout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="/bots" element={<BotManagement />} />
+                <Route path="/campaigns" element={<Campaigns />} />
                 {/* More routes to be added */}
                 <Route path="*" element={<NotFound />} />
               </Route>
