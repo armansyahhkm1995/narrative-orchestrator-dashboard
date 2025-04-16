@@ -1,11 +1,20 @@
 
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useData } from '@/context/DataContext';
 import { Prompt } from '@/types/data';
-import { BookMarked, Plus, Search, Calendar, Tag, Trash, Heart } from 'lucide-react';
+import { 
+  BookText, 
+  Search, 
+  Filter, 
+  Plus, 
+  Calendar, 
+  Tag, 
+  Trash, 
+  Edit, 
+  Copy,
+  CheckCircle,
+  XCircle
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,23 +22,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -37,521 +33,473 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
 import { format } from 'date-fns';
-
-const createPromptSchema = z.object({
-  name: z.string().min(3, { message: 'Prompt name must be at least 3 characters' }),
-  content: z.string().min(10, { message: 'Content must be at least 10 characters' }),
-  category: z.array(z.string()).min(1, { message: 'Select at least one category' }),
-  sentiment: z.enum(['positive', 'negative', 'neutral']),
-});
-
-type CreatePromptValues = z.infer<typeof createPromptSchema>;
-
-const searchPromptSchema = z.object({
-  query: z.string().optional(),
-  folder: z.string().optional(),
-  dateRange: z.enum(['day', 'week', 'month', 'year', 'all']).default('all'),
-});
-
-type SearchPromptValues = z.infer<typeof searchPromptSchema>;
+import { toast } from 'sonner';
 
 interface PromptManagementDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelectPrompt: (promptContent: string) => void;
+  onSelectPrompt?: (promptContent: string) => void;
 }
 
 const PromptManagementDialog = ({ open, onOpenChange, onSelectPrompt }: PromptManagementDialogProps) => {
-  const { prompts, campaignFolders, addPrompt, deletePrompt } = useData();
-  const [activeTab, setActiveTab] = useState('search');
-  const [filteredPrompts, setFilteredPrompts] = useState<Prompt[]>(prompts);
-  const [isCreating, setIsCreating] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const { prompts, campaignFolders, addPrompt, updatePrompt, deletePrompt } = useData();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedFolder, setSelectedFolder] = useState<string>('all');
+  const [selectedSentiment, setSelectedSentiment] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState('browse');
   
-  const createForm = useForm<CreatePromptValues>({
-    resolver: zodResolver(createPromptSchema),
-    defaultValues: {
-      name: '',
-      content: '',
-      category: [],
-      sentiment: 'neutral',
-    },
+  // New prompt form
+  const [newPromptName, setNewPromptName] = useState('');
+  const [newPromptContent, setNewPromptContent] = useState('');
+  const [newPromptCategory, setNewPromptCategory] = useState('');
+  const [newPromptCategories, setNewPromptCategories] = useState<string[]>([]);
+  const [newPromptSentiment, setNewPromptSentiment] = useState('neutral');
+  
+  // Edit mode
+  const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
+  
+  // For the tags input
+  const [tagInputOpen, setTagInputOpen] = useState(false);
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      resetForm();
+    }
+  }, [open]);
+  
+  // Reset form fields
+  const resetForm = () => {
+    setNewPromptName('');
+    setNewPromptContent('');
+    setNewPromptCategory('');
+    setNewPromptCategories([]);
+    setNewPromptSentiment('neutral');
+    setEditingPrompt(null);
+    setTagInputOpen(false);
+    setActiveTab('browse');
+  };
+  
+  // Set up form for editing
+  const startEditing = (prompt: Prompt) => {
+    setEditingPrompt(prompt);
+    setNewPromptName(prompt.name);
+    setNewPromptContent(prompt.content);
+    setNewPromptCategories([...prompt.category]);
+    setNewPromptSentiment(prompt.sentiment);
+    setActiveTab('create');
+  };
+  
+  // Filter prompts based on search and filters
+  const filteredPrompts = prompts.filter(prompt => {
+    const matchesSearch = searchTerm === '' || 
+      prompt.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      prompt.content.toLowerCase().includes(searchTerm.toLowerCase());
+      
+    const matchesFolder = selectedFolder === 'all' || 
+      (prompt.campaignId && campaignFolders.some(folder => 
+        folder.campaigns.some(campaign => 
+          campaign.id === prompt.campaignId && folder.id === selectedFolder
+        )
+      ));
+      
+    const matchesSentiment = selectedSentiment === 'all' || 
+      prompt.sentiment === selectedSentiment;
+      
+    return matchesSearch && matchesFolder && matchesSentiment;
   });
   
-  const searchForm = useForm<SearchPromptValues>({
-    resolver: zodResolver(searchPromptSchema),
-    defaultValues: {
-      query: '',
-      folder: '',
-      dateRange: 'all',
-    },
-  });
+  // Add a new tag to the list
+  const addTag = () => {
+    if (newPromptCategory.trim() !== '' && !newPromptCategories.includes(newPromptCategory.trim())) {
+      setNewPromptCategories([...newPromptCategories, newPromptCategory.trim()]);
+      setNewPromptCategory('');
+      setTagInputOpen(false);
+    }
+  };
   
-  // Update selected categories when they change
-  useEffect(() => {
-    createForm.setValue('category', selectedCategories);
-  }, [selectedCategories, createForm]);
+  // Remove a tag from the list
+  const removeTag = (tag: string) => {
+    setNewPromptCategories(newPromptCategories.filter(t => t !== tag));
+  };
   
-  // Filter prompts when search criteria change
-  useEffect(() => {
-    const searchValues = searchForm.getValues();
-    let filtered = [...prompts];
-    
-    // Filter by search query
-    if (searchValues.query) {
-      const lowerQuery = searchValues.query.toLowerCase();
-      filtered = filtered.filter(prompt => 
-        prompt.name.toLowerCase().includes(lowerQuery) || 
-        prompt.content.toLowerCase().includes(lowerQuery)
-      );
+  // Save prompt (create or update)
+  const savePrompt = () => {
+    if (newPromptName.trim() === '') {
+      toast.error('Prompt name is required');
+      return;
     }
     
-    // Filter by campaign folder
-    if (searchValues.folder) {
-      filtered = filtered.filter(prompt => 
-        prompt.campaignId ? 
-        campaignFolders.some(folder => 
-          folder.campaigns.some(campaign => 
-            campaign.id === prompt.campaignId && folder.id === searchValues.folder
-          )
-        ) : false
-      );
+    if (newPromptContent.trim() === '') {
+      toast.error('Prompt content is required');
+      return;
     }
     
-    // Filter by date range
-    if (searchValues.dateRange !== 'all') {
-      const now = new Date();
-      let compareDate = new Date();
-      
-      switch (searchValues.dateRange) {
-        case 'day':
-          compareDate.setDate(now.getDate() - 1);
-          break;
-        case 'week':
-          compareDate.setDate(now.getDate() - 7);
-          break;
-        case 'month':
-          compareDate.setMonth(now.getMonth() - 1);
-          break;
-        case 'year':
-          compareDate.setFullYear(now.getFullYear() - 1);
-          break;
-      }
-      
-      filtered = filtered.filter(prompt => 
-        new Date(prompt.createdAt) >= compareDate
-      );
+    if (newPromptCategories.length === 0) {
+      toast.error('At least one category is required');
+      return;
     }
-    
-    setFilteredPrompts(filtered);
-  }, [prompts, searchForm, campaignFolders]);
-  
-  const onCreateSubmit = (data: CreatePromptValues) => {
-    setIsCreating(true);
     
     try {
-      addPrompt({
-        name: data.name,
-        content: data.content,
-        category: data.category,
-        sentiment: data.sentiment,
-      });
-      
-      createForm.reset();
-      setSelectedCategories([]);
-      setActiveTab('search');
-      toast.success('Prompt created successfully');
-    } catch (error) {
-      toast.error('Failed to create prompt');
-      console.error(error);
-    } finally {
-      setIsCreating(false);
-    }
-  };
-  
-  const onSearchSubmit = (data: SearchPromptValues) => {
-    // Search is handled by the useEffect above
-    // This just prevents the form from refreshing the page
-  };
-  
-  const handleCategoryToggle = (category: string) => {
-    setSelectedCategories(prev => {
-      if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
+      if (editingPrompt) {
+        // Update existing prompt
+        updatePrompt({
+          ...editingPrompt,
+          name: newPromptName.trim(),
+          content: newPromptContent.trim(),
+          category: newPromptCategories,
+          sentiment: newPromptSentiment as 'positive' | 'negative' | 'neutral',
+        });
+        toast.success('Prompt updated successfully');
       } else {
-        return [...prev, category];
+        // Create new prompt
+        addPrompt({
+          name: newPromptName.trim(),
+          content: newPromptContent.trim(),
+          category: newPromptCategories,
+          sentiment: newPromptSentiment as 'positive' | 'negative' | 'neutral',
+        });
+        toast.success('Prompt created successfully');
       }
-    });
-  };
-  
-  const handleDeletePrompt = (id: string) => {
-    try {
-      deletePrompt(id);
-      toast.success('Prompt deleted successfully');
+      resetForm();
+      setActiveTab('browse');
     } catch (error) {
-      toast.error('Failed to delete prompt');
+      toast.error(editingPrompt ? 'Failed to update prompt' : 'Failed to create prompt');
       console.error(error);
     }
   };
   
-  // Common categories for narrative prompts
-  const commonCategories = [
-    'Politics', 'Technology', 'Environment', 'Health', 'Economy', 
-    'Education', 'Entertainment', 'Sports', 'Social Media'
-  ];
-  
-  // Find the campaign name for a prompt
-  const getCampaignInfo = (promptId: string) => {
-    for (const folder of campaignFolders) {
-      for (const campaign of folder.campaigns) {
-        if (campaign.id === promptId) {
-          return {
-            campaignName: campaign.name,
-            folderName: folder.name
-          };
-        }
-      }
+  // Handle prompt selection for campaign
+  const handleSelectPrompt = (prompt: Prompt) => {
+    if (onSelectPrompt) {
+      onSelectPrompt(prompt.content);
     }
-    return null;
   };
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <BookMarked className="h-5 w-5 text-purple-600" />
+            <BookText className="h-5 w-5 text-purple-600" />
             Prompt Management
           </DialogTitle>
           <DialogDescription>
-            Create, search, and manage narrative prompts for your campaigns
+            Browse, create, and manage prompt templates for your campaigns
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="search" value={activeTab} onValueChange={setActiveTab}>
+        <Tabs 
+          value={activeTab} 
+          onValueChange={setActiveTab}
+          className="flex-1 overflow-hidden flex flex-col"
+        >
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="search">Search Prompts</TabsTrigger>
-            <TabsTrigger value="create">Create New Prompt</TabsTrigger>
+            <TabsTrigger value="browse">Browse Prompts</TabsTrigger>
+            <TabsTrigger value="create">
+              {editingPrompt ? 'Edit Prompt' : 'Create Prompt'}
+            </TabsTrigger>
           </TabsList>
           
-          {/* Search Prompts Tab */}
-          <TabsContent value="search" className="space-y-4">
-            <Form {...searchForm}>
-              <form onSubmit={searchForm.handleSubmit(onSearchSubmit)} className="space-y-4">
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                  <FormField
-                    control={searchForm.control}
-                    name="query"
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <div className="relative">
-                          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                          <FormControl>
-                            <Input
-                              placeholder="Search prompts..."
-                              className="pl-8"
-                              {...field}
-                              onChange={(e) => {
-                                field.onChange(e);
-                                searchForm.handleSubmit(onSearchSubmit)();
-                              }}
-                            />
-                          </FormControl>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={searchForm.control}
-                    name="folder"
-                    render={({ field }) => (
-                      <FormItem className="w-full sm:w-48">
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            searchForm.handleSubmit(onSearchSubmit)();
-                          }}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="All folders" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="">All folders</SelectItem>
-                            {campaignFolders.map(folder => (
-                              <SelectItem key={folder.id} value={folder.id}>
-                                {folder.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={searchForm.control}
-                    name="dateRange"
-                    render={({ field }) => (
-                      <FormItem className="w-full sm:w-40">
-                        <Select
-                          onValueChange={(value: any) => {
-                            field.onChange(value);
-                            searchForm.handleSubmit(onSearchSubmit)();
-                          }}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <Calendar className="mr-2 h-4 w-4" />
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="all">All time</SelectItem>
-                            <SelectItem value="day">Past day</SelectItem>
-                            <SelectItem value="week">Past week</SelectItem>
-                            <SelectItem value="month">Past month</SelectItem>
-                            <SelectItem value="year">Past year</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </form>
-            </Form>
-            
-            <Separator />
-            
-            <div className="space-y-4">
-              {filteredPrompts.length > 0 ? (
-                filteredPrompts.map(prompt => (
-                  <div key={prompt.id} className="p-4 border rounded-md">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium">{prompt.name}</h4>
-                      <div className="flex space-x-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onSelectPrompt(prompt.content)}
-                          className="h-8 w-8"
-                          title="Use this prompt"
-                        >
-                          <Heart className="h-4 w-4 text-purple-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeletePrompt(prompt.id)}
-                          className="h-8 w-8"
-                          title="Delete prompt"
-                        >
-                          <Trash className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{prompt.content}</p>
-                    
-                    <div className="flex flex-wrap items-center gap-2 mt-2">
-                      <Badge variant="outline" className={`
-                        ${prompt.sentiment === 'positive' ? 'bg-green-50 text-green-700' : ''}
-                        ${prompt.sentiment === 'negative' ? 'bg-red-50 text-red-700' : ''}
-                        ${prompt.sentiment === 'neutral' ? 'bg-blue-50 text-blue-700' : ''}
-                      `}>
-                        {prompt.sentiment}
-                      </Badge>
-                      
-                      {prompt.category.map(cat => (
-                        <Badge key={cat} variant="secondary" className="bg-gray-100">
-                          {cat}
-                        </Badge>
-                      ))}
-                      
-                      <span className="text-xs text-muted-foreground ml-auto flex items-center">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        {format(new Date(prompt.createdAt), 'MMM d, yyyy')}
-                      </span>
-                    </div>
-                    
-                    {prompt.campaignId && (
-                      <div className="mt-2 text-xs text-muted-foreground">
-                        {getCampaignInfo(prompt.campaignId) ? (
-                          <p>
-                            Used in campaign: <span className="font-medium">{getCampaignInfo(prompt.campaignId)?.campaignName}</span> 
-                            <span> ({getCampaignInfo(prompt.campaignId)?.folderName})</span>
-                          </p>
-                        ) : (
-                          <p>Used in campaign: Unknown</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <BookMarked className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-                  <h3 className="text-lg font-medium">No prompts found</h3>
-                  <p className="text-muted-foreground mt-2 mb-4">
-                    {searchForm.getValues().query || searchForm.getValues().folder || searchForm.getValues().dateRange !== 'all' 
-                      ? 'Try adjusting your search criteria'
-                      : 'Create your first prompt to get started'}
-                  </p>
-                  {(searchForm.getValues().query || searchForm.getValues().folder || searchForm.getValues().dateRange !== 'all') ? (
-                    <Button 
-                      variant="outline" 
-                      onClick={() => {
-                        searchForm.reset({
-                          query: '',
-                          folder: '',
-                          dateRange: 'all',
-                        });
-                        searchForm.handleSubmit(onSearchSubmit)();
-                      }}
-                    >
-                      Clear filters
-                    </Button>
-                  ) : (
-                    <Button 
-                      onClick={() => setActiveTab('create')}
-                      className="gap-1"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Create Prompt
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-          
-          {/* Create New Prompt Tab */}
-          <TabsContent value="create">
-            <Form {...createForm}>
-              <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
-                <FormField
-                  control={createForm.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Prompt Name</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="e.g., Environmental Policy Counter-Narrative"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+          {/* Browse Prompts Tab */}
+          <TabsContent value="browse" className="flex-1 overflow-hidden flex flex-col">
+            <div className="flex items-center space-x-2 mb-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search prompts..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                
-                <FormField
-                  control={createForm.control}
-                  name="content"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Content</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Write your narrative diversion content..."
-                          className="resize-none min-h-[150px]" 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={createForm.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Categories</FormLabel>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {commonCategories.map(category => (
-                          <Badge
-                            key={category}
-                            variant={selectedCategories.includes(category) ? "default" : "outline"}
-                            className={`cursor-pointer ${
-                              selectedCategories.includes(category) 
-                                ? 'bg-purple-600 hover:bg-purple-700' 
-                                : 'hover:bg-purple-100'
-                            }`}
-                            onClick={() => handleCategoryToggle(category)}
-                          >
-                            <Tag className="h-3 w-3 mr-1" />
-                            {category}
-                          </Badge>
-                        ))}
-                      </div>
-                      {createForm.formState.errors.category && (
-                        <p className="text-sm font-medium text-destructive mt-2">
-                          {createForm.formState.errors.category.message}
-                        </p>
-                      )}
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={createForm.control}
-                  name="sentiment"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Sentiment</FormLabel>
+              </div>
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="gap-1">
+                    <Filter className="h-4 w-4" />
+                    <span>Filter</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-4">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="font-medium">Campaign Folder</h4>
                       <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
+                        value={selectedFolder} 
+                        onValueChange={setSelectedFolder}
                       >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select sentiment" />
-                          </SelectTrigger>
-                        </FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="All Folders" />
+                        </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="all">All Folders</SelectItem>
+                          {campaignFolders.map((folder) => (
+                            <SelectItem key={folder.id} value={folder.id}>
+                              {folder.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-medium">Sentiment</h4>
+                      <Select 
+                        value={selectedSentiment} 
+                        onValueChange={setSelectedSentiment}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="All Sentiments" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Sentiments</SelectItem>
                           <SelectItem value="positive">Positive</SelectItem>
                           <SelectItem value="neutral">Neutral</SelectItem>
                           <SelectItem value="negative">Negative</SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
+              <Button 
+                onClick={() => {
+                  resetForm();
+                  setActiveTab('create');
+                }}
+                className="gap-1"
+              >
+                <Plus className="h-4 w-4" />
+                <span>New</span>
+              </Button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto pr-1">
+              {filteredPrompts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-40 text-center">
+                  <BookText className="h-10 w-10 text-muted-foreground mb-2" />
+                  <h3 className="font-medium text-muted-foreground">No prompts found</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Try adjusting your search or filters, or create a new prompt.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredPrompts.map((prompt) => (
+                    <div 
+                      key={prompt.id} 
+                      className="border rounded-lg p-3 hover:border-purple-300 transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-medium">{prompt.name}</h3>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {prompt.category.map((cat) => (
+                              <Badge key={cat} variant="outline" className="text-xs">
+                                {cat}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {onSelectPrompt && (
+                              <DropdownMenuItem 
+                                onClick={() => handleSelectPrompt(prompt)}
+                              >
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Use in Campaign
+                              </DropdownMenuItem>
+                            )}
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                startEditing(prompt);
+                              }}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => {
+                                if (window.confirm('Are you sure you want to delete this prompt?')) {
+                                  deletePrompt(prompt.id);
+                                  toast.success('Prompt deleted successfully');
+                                }
+                              }}
+                              className="text-red-600"
+                            >
+                              <Trash className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      
+                      <p className="text-sm text-muted-foreground mt-2 line-clamp-3">
+                        {prompt.content}
+                      </p>
+                      
+                      <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <span className="flex items-center">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            {format(new Date(prompt.createdAt), 'MMM d, yyyy')}
+                          </span>
+                          <span className={`flex items-center ${
+                            prompt.sentiment === 'positive' ? 'text-green-600' : 
+                            prompt.sentiment === 'negative' ? 'text-red-600' : 'text-blue-600'
+                          }`}>
+                            {prompt.sentiment === 'positive' ? '😊' : 
+                             prompt.sentiment === 'negative' ? '😠' : '😐'}
+                            {prompt.sentiment.charAt(0).toUpperCase() + prompt.sentiment.slice(1)}
+                          </span>
+                        </div>
+                        
+                        {prompt.campaignId && (
+                          <span className="flex items-center">
+                            Used in campaign
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          {/* Create Prompt Tab */}
+          <TabsContent value="create" className="flex-1 overflow-hidden flex flex-col">
+            <div className="space-y-4 flex-1 overflow-y-auto pr-1">
+              <div className="space-y-2">
+                <label htmlFor="prompt-name" className="text-sm font-medium">
+                  Prompt Name
+                </label>
+                <Input
+                  id="prompt-name"
+                  placeholder="e.g., Climate Change Narrative"
+                  value={newPromptName}
+                  onChange={(e) => setNewPromptName(e.target.value)}
                 />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="prompt-content" className="text-sm font-medium">
+                  Prompt Content
+                </label>
+                <Textarea
+                  id="prompt-content"
+                  placeholder="Write your prompt content here..."
+                  className="min-h-[150px] resize-none"
+                  value={newPromptContent}
+                  onChange={(e) => setNewPromptContent(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Categories/Tags</label>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {newPromptCategories.map((cat) => (
+                    <Badge 
+                      key={cat} 
+                      variant="secondary"
+                      className="gap-1 cursor-pointer hover:bg-secondary/80"
+                      onClick={() => removeTag(cat)}
+                    >
+                      {cat}
+                      <XCircle className="h-3 w-3" />
+                    </Badge>
+                  ))}
+                </div>
                 
-                <div className="flex justify-end pt-4 space-x-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      createForm.reset();
-                      setSelectedCategories([]);
-                      setActiveTab('search');
-                    }}
-                  >
-                    Cancel
-                  </Button>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Input
+                      placeholder="Add a category (e.g., Politics)"
+                      value={newPromptCategory}
+                      onChange={(e) => setNewPromptCategory(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addTag();
+                        }
+                      }}
+                    />
+                  </div>
                   <Button 
-                    type="submit" 
-                    disabled={isCreating}
-                    className="bg-purple-600 hover:bg-purple-700"
+                    type="button" 
+                    variant="outline"
+                    onClick={addTag}
                   >
-                    {isCreating ? 'Creating...' : 'Create Prompt'}
+                    Add
                   </Button>
                 </div>
-              </form>
-            </Form>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Sentiment</label>
+                <Select 
+                  value={newPromptSentiment} 
+                  onValueChange={setNewPromptSentiment}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select sentiment" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="positive">Positive</SelectItem>
+                    <SelectItem value="neutral">Neutral</SelectItem>
+                    <SelectItem value="negative">Negative</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <DialogFooter className="mt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  resetForm();
+                  setActiveTab('browse');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={savePrompt}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                {editingPrompt ? 'Update Prompt' : 'Create Prompt'}
+              </Button>
+            </DialogFooter>
           </TabsContent>
         </Tabs>
       </DialogContent>
