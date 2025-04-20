@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { 
   Table, 
   TableBody, 
@@ -43,6 +42,7 @@ const BotManagement = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [currentBot, setCurrentBot] = useState<BotType | null>(null);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   
   // Form state
   const [botName, setBotName] = useState('');
@@ -69,7 +69,6 @@ const BotManagement = () => {
       return;
     }
 
-    // Collect only the links for selected platforms
     const links: Record<string, string> = {};
     selectedPlatforms.forEach(platform => {
       links[platform] = socialMediaLinks[platform];
@@ -82,7 +81,6 @@ const BotManagement = () => {
       socialMediaLinks: links
     });
 
-    // Reset form
     setBotName('');
     setSelectedPlatforms([]);
     setSocialMediaLinks({
@@ -106,7 +104,6 @@ const BotManagement = () => {
       return;
     }
 
-    // Collect only the links for selected platforms
     const links: Record<string, string> = {};
     selectedPlatforms.forEach(platform => {
       links[platform] = socialMediaLinks[platform];
@@ -119,7 +116,6 @@ const BotManagement = () => {
       socialMediaLinks: links
     });
 
-    // Reset form
     setBotName('');
     setSelectedPlatforms([]);
     setSocialMediaLinks({
@@ -147,7 +143,6 @@ const BotManagement = () => {
     setBotName(bot.name);
     setSelectedPlatforms([...bot.platforms]);
     
-    // Initialize links from bot data or empty strings
     const initialLinks: Record<SocialMediaPlatform, string> = {
       X: '',
       Instagram: '',
@@ -157,7 +152,6 @@ const BotManagement = () => {
       Blog: ''
     };
     
-    // If bot has social media links, use them
     if (bot.socialMediaLinks) {
       bot.platforms.forEach(platform => {
         initialLinks[platform] = bot.socialMediaLinks?.[platform] || '';
@@ -166,16 +160,19 @@ const BotManagement = () => {
     
     setSocialMediaLinks(initialLinks);
     setIsEditDialogOpen(true);
+    setOpenDropdownId(null);
   };
 
   const openDeleteDialog = (bot: BotType) => {
     setCurrentBot(bot);
     setIsDeleteDialogOpen(true);
+    setOpenDropdownId(null);
   };
 
   const openDetailDialog = (bot: BotType) => {
     setCurrentBot(bot);
     setIsDetailDialogOpen(true);
+    setOpenDropdownId(null);
   };
 
   const handleVerifyNow = (platform: string) => {
@@ -201,11 +198,47 @@ const BotManagement = () => {
     }));
   };
 
+  const handleDropdownOpenChange = (open: boolean, botId: string) => {
+    if (open) {
+      setOpenDropdownId(botId);
+    } else {
+      setOpenDropdownId(null);
+    }
+  };
+
+  const handleAddDialogOpenChange = (open: boolean) => {
+    setIsAddDialogOpen(open);
+    if (!open) {
+      setOpenDropdownId(null);
+    }
+  };
+
+  const handleEditDialogOpenChange = (open: boolean) => {
+    setIsEditDialogOpen(open);
+    if (!open) {
+      setOpenDropdownId(null);
+    }
+  };
+
+  const handleDeleteDialogOpenChange = (open: boolean) => {
+    setIsDeleteDialogOpen(open);
+    if (!open) {
+      setOpenDropdownId(null);
+    }
+  };
+
+  const handleDetailDialogOpenChange = (open: boolean) => {
+    setIsDetailDialogOpen(open);
+    if (!open) {
+      setOpenDropdownId(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
         <h1 className="text-2xl font-bold tracking-tight">Bot Management</h1>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <Dialog open={isAddDialogOpen} onOpenChange={handleAddDialogOpenChange}>
           <DialogTrigger asChild>
             <Button className="bg-buzzer-primary">
               <Plus className="mr-2 h-4 w-4" />
@@ -309,7 +342,7 @@ const BotManagement = () => {
                   </TableCell>
                   <TableCell>{formatDate(bot.createdAt)}</TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
+                    <DropdownMenu open={openDropdownId === bot.id} onOpenChange={(open) => handleDropdownOpenChange(open, bot.id)}>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
                           <span className="sr-only">Open menu</span>
@@ -345,7 +378,7 @@ const BotManagement = () => {
       </div>
 
       {/* Edit Bot Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <Dialog open={isEditDialogOpen} onOpenChange={handleEditDialogOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Bot</DialogTitle>
@@ -403,7 +436,7 @@ const BotManagement = () => {
       </Dialog>
 
       {/* Delete Bot Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={handleDeleteDialogOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Bot</DialogTitle>
@@ -419,7 +452,7 @@ const BotManagement = () => {
       </Dialog>
 
       {/* Bot Details Dialog */}
-      <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+      <Dialog open={isDetailDialogOpen} onOpenChange={handleDetailDialogOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Bot Details</DialogTitle>
