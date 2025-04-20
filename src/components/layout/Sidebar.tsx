@@ -60,8 +60,8 @@ const Sidebar: React.FC = () => {
     >
       <div className="p-4 flex items-center justify-between border-b border-gray-200">
         {!collapsed && (
-          <div className="flex items-center">
-            <Bot className="h-6 w-6 text-buzzer-primary mr-2" />
+          <div className="flex items-center space-x-2">
+            <Bot className="h-6 w-6 text-buzzer-primary" />
             <h1 className="text-xl font-bold text-buzzer-primary">Avatar Management</h1>
           </div>
         )}
