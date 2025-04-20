@@ -29,11 +29,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ icon: Icon, label, to, collap
       to={to}
       className={({ isActive }) =>
         cn(
-          'flex items-center py-3 px-4 rounded-lg transition-colors',
+          'flex items-center py-3 px-4 rounded-lg transition-all duration-300',
           collapsed ? 'justify-center px-3' : 'justify-start',
           isActive
-            ? 'bg-buzzer-primary text-white'
-            : 'text-buzzer-secondary hover:bg-gray-100'
+            ? 'bg-futuristic-primary text-white shadow-neon'
+            : 'text-futuristic-foreground hover:bg-futuristic-muted hover:shadow-neon'
         )
       }
     >
@@ -54,22 +54,23 @@ const Sidebar: React.FC = () => {
   return (
     <div
       className={cn(
-        'flex flex-col bg-white border-r border-gray-200 h-screen transition-all duration-300',
+        'flex flex-col bg-futuristic-card border-r border-futuristic-border h-screen transition-all duration-300',
         collapsed ? 'w-16' : 'w-64'
       )}
     >
-      <div className="p-4 flex items-center justify-between border-b border-gray-200">
+      <div className="p-4 flex flex-col items-center justify-between border-b border-futuristic-border">
         {!collapsed && (
-          <div className="flex items-center space-x-2">
-            <Bot className="h-6 w-6 text-buzzer-primary" />
-            <h1 className="text-xl font-bold text-buzzer-primary">Avatar Management</h1>
+          <div className="flex flex-col items-center space-y-2">
+            <Bot className="h-8 w-8 text-futuristic-primary" />
+            <h1 className="text-xl font-bold text-futuristic-primary font-orbitron">Avatar Management</h1>
           </div>
         )}
         <Button
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          className={cn('rounded-full p-1', collapsed && 'ml-auto mr-auto')}
+          className={cn('rounded-full p-1 mt-2 hover:bg-futuristic-muted hover:shadow-neon', 
+            collapsed && 'mx-auto')}
           aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
         >
           {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
