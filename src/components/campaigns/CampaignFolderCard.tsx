@@ -32,10 +32,23 @@ const CampaignFolderCard = ({ folder, onCreateCampaign }: CampaignFolderCardProp
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
   const campaignCount = folder.campaigns.length;
   const formattedDate = new Date(folder.createdAt).toLocaleDateString();
   
+  // Handler to manage dropdown and edit modal state
+  const handleEditClick = () => {
+    setIsDropdownOpen(false);
+    setIsEditOpen(true);
+  };
+
+  // Handler to manage dropdown and delete modal state
+  const handleDeleteClick = () => {
+    setIsDropdownOpen(false);
+    setIsDeleteOpen(true);
+  };
+
   return (
     <>
       <Card className="overflow-hidden">
@@ -45,7 +58,7 @@ const CampaignFolderCard = ({ folder, onCreateCampaign }: CampaignFolderCardProp
               <Folder className="h-5 w-5 text-purple-600" />
               <CardTitle className="text-lg">{folder.name}</CardTitle>
             </div>
-            <DropdownMenu>
+            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <MoreVertical className="h-4 w-4" />
@@ -53,11 +66,11 @@ const CampaignFolderCard = ({ folder, onCreateCampaign }: CampaignFolderCardProp
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+                <DropdownMenuItem onClick={handleEditClick}>
                   <Edit className="mr-2 h-4 w-4" />
                   Edit Folder
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setIsDeleteOpen(true)} className="text-destructive">
+                <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive">
                   <Trash2 className="mr-2 h-4 w-4" />
                   Delete Folder
                 </DropdownMenuItem>
@@ -103,13 +116,25 @@ const CampaignFolderCard = ({ folder, onCreateCampaign }: CampaignFolderCardProp
       <EditFolderDialog
         folder={folder}
         open={isEditOpen}
-        onOpenChange={setIsEditOpen}
+        onOpenChange={(open) => {
+          setIsEditOpen(open);
+          // Reset dropdown state when modal is closed
+          if (!open) {
+            setIsDropdownOpen(false);
+          }
+        }}
       />
       
       <DeleteFolderDialog
         folder={folder}
         open={isDeleteOpen}
-        onOpenChange={setIsDeleteOpen}
+        onOpenChange={(open) => {
+          setIsDeleteOpen(open);
+          // Reset dropdown state when modal is closed
+          if (!open) {
+            setIsDropdownOpen(false);
+          }
+        }}
       />
     </>
   );
