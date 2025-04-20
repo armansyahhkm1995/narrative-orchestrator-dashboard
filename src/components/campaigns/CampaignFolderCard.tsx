@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Folder, MoreVertical, Edit, Trash2, PlusCircle } from 'lucide-react';
 import { 
@@ -36,11 +37,13 @@ const CampaignFolderCard = ({ folder, onCreateCampaign }: CampaignFolderCardProp
   const campaignCount = folder.campaigns.length;
   const formattedDate = new Date(folder.createdAt).toLocaleDateString();
   
+  // Handler to manage dropdown and edit modal state
   const handleEditClick = () => {
     setIsDropdownOpen(false);
     setIsEditOpen(true);
   };
 
+  // Handler to manage dropdown and delete modal state
   const handleDeleteClick = () => {
     setIsDropdownOpen(false);
     setIsDeleteOpen(true);
@@ -48,12 +51,12 @@ const CampaignFolderCard = ({ folder, onCreateCampaign }: CampaignFolderCardProp
 
   return (
     <>
-      <Card className="futuristic-card">
-        <CardHeader className="bg-gradient-to-r from-futuristic-muted to-futuristic-card pb-4">
+      <Card className="overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 pb-4">
           <div className="flex justify-between items-start">
             <div className="flex items-center gap-2">
-              <Folder className="h-5 w-5 text-futuristic-primary" />
-              <CardTitle className="text-lg font-orbitron">{folder.name}</CardTitle>
+              <Folder className="h-5 w-5 text-purple-600" />
+              <CardTitle className="text-lg">{folder.name}</CardTitle>
             </div>
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
               <DropdownMenuTrigger asChild>
@@ -74,15 +77,15 @@ const CampaignFolderCard = ({ folder, onCreateCampaign }: CampaignFolderCardProp
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <CardDescription className="text-gray-400">{folder.description}</CardDescription>
+          <CardDescription>{folder.description}</CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex gap-2">
-              <Badge variant="outline" className="bg-futuristic-muted border-futuristic-primary text-futuristic-primary">
+              <Badge variant="outline" className="bg-purple-50">
                 {campaignCount} campaign{campaignCount !== 1 ? 's' : ''}
               </Badge>
-              <Badge variant="outline" className="bg-futuristic-muted border-futuristic-border text-gray-400">
+              <Badge variant="outline" className="bg-blue-50">
                 Created: {formattedDate}
               </Badge>
             </div>
@@ -95,14 +98,13 @@ const CampaignFolderCard = ({ folder, onCreateCampaign }: CampaignFolderCardProp
             variant="ghost" 
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-futuristic-primary hover:shadow-neon"
           >
             {isExpanded ? 'Hide Campaigns' : 'Show Campaigns'}
           </Button>
           <Button 
             variant="outline" 
             size="sm" 
-            className="gap-1 border-futuristic-primary text-futuristic-primary hover:shadow-neon"
+            className="gap-1"
             onClick={onCreateCampaign}
           >
             <PlusCircle className="h-3.5 w-3.5" />
@@ -116,6 +118,7 @@ const CampaignFolderCard = ({ folder, onCreateCampaign }: CampaignFolderCardProp
         open={isEditOpen}
         onOpenChange={(open) => {
           setIsEditOpen(open);
+          // Reset dropdown state when modal is closed
           if (!open) {
             setIsDropdownOpen(false);
           }
@@ -127,6 +130,7 @@ const CampaignFolderCard = ({ folder, onCreateCampaign }: CampaignFolderCardProp
         open={isDeleteOpen}
         onOpenChange={(open) => {
           setIsDeleteOpen(open);
+          // Reset dropdown state when modal is closed
           if (!open) {
             setIsDropdownOpen(false);
           }
