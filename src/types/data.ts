@@ -7,9 +7,11 @@ export interface Bot {
   platforms: SocialMediaPlatform[];
   createdAt: string;
   socialMediaLinks?: Record<string, string>;
+  expertise?: string;
+  socialMediaDetails?: Record<string, any>;
 }
 
-export type SocialMediaPlatform = 'X' | 'Instagram' | 'Facebook' | 'TikTok' | 'YouTube' | 'Blog';
+export type SocialMediaPlatform = 'X' | 'Instagram' | 'Facebook' | 'TikTok' | 'YouTube' | 'Blog' | 'Threads';
 
 // Campaign Management Types
 export interface CampaignFolder {

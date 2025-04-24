@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { 
   Table, 
@@ -29,6 +30,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { MoreHorizontal, Plus, Edit, Trash2, ExternalLink, Check, X, Bot } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { Bot as BotType, SocialMediaPlatform } from '@/types/data';
@@ -46,6 +48,7 @@ const BotManagement = () => {
   
   // Form state
   const [botName, setBotName] = useState('');
+  const [botExpertise, setBotExpertise] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<SocialMediaPlatform[]>([]);
   const [socialMediaLinks, setSocialMediaLinks] = useState<Record<SocialMediaPlatform, string>>({
     X: '',
@@ -53,11 +56,66 @@ const BotManagement = () => {
     Facebook: '',
     TikTok: '',
     YouTube: '',
-    Blog: ''
+    Blog: '',
+    Threads: ''
+  });
+  
+  // Social Media Details
+  const [socialMediaDetails, setSocialMediaDetails] = useState({
+    X: {
+      username: '',
+      displayName: '',
+      bio: '',
+      photoUrl: '',
+      headerImage: '',
+      location: '',
+      link: '',
+      birthDate: ''
+    },
+    Instagram: {
+      username: '',
+      displayName: '',
+      bio: '',
+      photoUrl: ''
+    },
+    TikTok: {
+      username: '',
+      displayName: '',
+      bio: '',
+      photoUrl: ''
+    },
+    Facebook: {
+      name: '',
+      bio: '',
+      photoUrl: '',
+      coverPhoto: '',
+      job: '',
+      education: '',
+      address: '',
+      relationshipStatus: '',
+      birthDate: ''
+    },
+    YouTube: {
+      channelName: '',
+      bio: '',
+      photoUrl: '',
+      banner: ''
+    },
+    Threads: {
+      username: '',
+      displayName: '',
+      bio: '',
+      photoUrl: ''
+    },
+    Blog: {
+      authorName: '',
+      bio: '',
+      photoUrl: ''
+    }
   });
 
   // Platform options
-  const platforms: SocialMediaPlatform[] = ['X', 'Instagram', 'Facebook', 'TikTok', 'YouTube', 'Blog'];
+  const platforms: SocialMediaPlatform[] = ['X', 'Instagram', 'Facebook', 'TikTok', 'YouTube', 'Blog', 'Threads'];
 
   const handleAddBot = () => {
     if (!botName || selectedPlatforms.length === 0) {
@@ -78,10 +136,18 @@ const BotManagement = () => {
       name: botName,
       status: 'idle',
       platforms: selectedPlatforms,
-      socialMediaLinks: links
+      socialMediaLinks: links,
+      expertise: botExpertise,
+      socialMediaDetails: getSocialMediaDetailsForSelectedPlatforms()
     });
 
+    resetFormState();
+    setIsAddDialogOpen(false);
+  };
+
+  const resetFormState = () => {
     setBotName('');
+    setBotExpertise('');
     setSelectedPlatforms([]);
     setSocialMediaLinks({
       X: '',
@@ -89,9 +155,70 @@ const BotManagement = () => {
       Facebook: '',
       TikTok: '',
       YouTube: '',
-      Blog: ''
+      Blog: '',
+      Threads: ''
     });
-    setIsAddDialogOpen(false);
+    // Reset all social media details
+    setSocialMediaDetails({
+      X: {
+        username: '',
+        displayName: '',
+        bio: '',
+        photoUrl: '',
+        headerImage: '',
+        location: '',
+        link: '',
+        birthDate: ''
+      },
+      Instagram: {
+        username: '',
+        displayName: '',
+        bio: '',
+        photoUrl: ''
+      },
+      TikTok: {
+        username: '',
+        displayName: '',
+        bio: '',
+        photoUrl: ''
+      },
+      Facebook: {
+        name: '',
+        bio: '',
+        photoUrl: '',
+        coverPhoto: '',
+        job: '',
+        education: '',
+        address: '',
+        relationshipStatus: '',
+        birthDate: ''
+      },
+      YouTube: {
+        channelName: '',
+        bio: '',
+        photoUrl: '',
+        banner: ''
+      },
+      Threads: {
+        username: '',
+        displayName: '',
+        bio: '',
+        photoUrl: ''
+      },
+      Blog: {
+        authorName: '',
+        bio: '',
+        photoUrl: ''
+      }
+    });
+  };
+
+  const getSocialMediaDetailsForSelectedPlatforms = () => {
+    const details: Record<string, any> = {};
+    selectedPlatforms.forEach(platform => {
+      details[platform] = socialMediaDetails[platform];
+    });
+    return details;
   };
 
   const handleEditBot = () => {
@@ -113,19 +240,12 @@ const BotManagement = () => {
       ...currentBot,
       name: botName,
       platforms: selectedPlatforms,
-      socialMediaLinks: links
+      socialMediaLinks: links,
+      expertise: botExpertise,
+      socialMediaDetails: getSocialMediaDetailsForSelectedPlatforms()
     });
 
-    setBotName('');
-    setSelectedPlatforms([]);
-    setSocialMediaLinks({
-      X: '',
-      Instagram: '',
-      Facebook: '',
-      TikTok: '',
-      YouTube: '',
-      Blog: ''
-    });
+    resetFormState();
     setCurrentBot(null);
     setIsEditDialogOpen(false);
   };
@@ -141,6 +261,7 @@ const BotManagement = () => {
   const openEditDialog = (bot: BotType) => {
     setCurrentBot(bot);
     setBotName(bot.name);
+    setBotExpertise(bot.expertise || '');
     setSelectedPlatforms([...bot.platforms]);
     
     const initialLinks: Record<SocialMediaPlatform, string> = {
@@ -149,7 +270,8 @@ const BotManagement = () => {
       Facebook: '',
       TikTok: '',
       YouTube: '',
-      Blog: ''
+      Blog: '',
+      Threads: ''
     };
     
     if (bot.socialMediaLinks) {
@@ -159,6 +281,19 @@ const BotManagement = () => {
     }
     
     setSocialMediaLinks(initialLinks);
+
+    // Load social media details if they exist
+    if (bot.socialMediaDetails) {
+      const currentDetails = { ...socialMediaDetails };
+      Object.keys(bot.socialMediaDetails).forEach((platform) => {
+        currentDetails[platform as SocialMediaPlatform] = {
+          ...currentDetails[platform as SocialMediaPlatform],
+          ...bot.socialMediaDetails[platform]
+        };
+      });
+      setSocialMediaDetails(currentDetails);
+    }
+    
     setIsEditDialogOpen(true);
     setOpenDropdownId(null);
   };
@@ -198,6 +333,16 @@ const BotManagement = () => {
     }));
   };
 
+  const handleSocialMediaDetailChange = (platform: SocialMediaPlatform, field: string, value: string) => {
+    setSocialMediaDetails(prev => ({
+      ...prev,
+      [platform]: {
+        ...prev[platform],
+        [field]: value
+      }
+    }));
+  };
+
   const handleDropdownOpenChange = (open: boolean, botId: string) => {
     if (open) {
       setOpenDropdownId(botId);
@@ -209,6 +354,7 @@ const BotManagement = () => {
   const handleAddDialogOpenChange = (open: boolean) => {
     setIsAddDialogOpen(open);
     if (!open) {
+      resetFormState();
       setOpenDropdownId(null);
     }
   };
@@ -216,6 +362,7 @@ const BotManagement = () => {
   const handleEditDialogOpenChange = (open: boolean) => {
     setIsEditDialogOpen(open);
     if (!open) {
+      resetFormState();
       setOpenDropdownId(null);
     }
   };
@@ -234,6 +381,351 @@ const BotManagement = () => {
     }
   };
 
+  const renderSocialMediaDetailsForm = (platform: SocialMediaPlatform) => {
+    switch(platform) {
+      case 'X':
+        return (
+          <div className="space-y-3">
+            <h3 className="font-medium text-sm">X (Twitter) Details</h3>
+            
+            <div>
+              <Label htmlFor="x-username">Username:</Label>
+              <Input
+                id="x-username"
+                placeholder="@RinaSari89"
+                value={socialMediaDetails.X.username}
+                onChange={(e) => handleSocialMediaDetailChange('X', 'username', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Nama realistis, hindari angka acak seperti @User123456.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="x-displayName">Display Name:</Label>
+              <Input
+                id="x-displayName"
+                placeholder="Rina Sari"
+                value={socialMediaDetails.X.displayName}
+                onChange={(e) => handleSocialMediaDetailChange('X', 'displayName', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Nama lengkap atau panggilan.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="x-bio">Bio:</Label>
+              <Textarea
+                id="x-bio"
+                placeholder="Pecinta kopi | Jakarta | Berbagi opini"
+                maxLength={160}
+                value={socialMediaDetails.X.bio}
+                onChange={(e) => handleSocialMediaDetailChange('X', 'bio', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Max 160 karakter, tambah 1-2 emoji (☕🌆).</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="x-location">Location:</Label>
+              <Input
+                id="x-location"
+                placeholder="Jakarta, Indonesia"
+                value={socialMediaDetails.X.location}
+                onChange={(e) => handleSocialMediaDetailChange('X', 'location', e.target.value)}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="x-link">Link (opsional):</Label>
+              <Input
+                id="x-link"
+                placeholder="https://medium.com/@username"
+                value={socialMediaDetails.X.link}
+                onChange={(e) => handleSocialMediaDetailChange('X', 'link', e.target.value)}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="x-birthDate">Tanggal Lahir (opsional):</Label>
+              <Input
+                id="x-birthDate"
+                type="date"
+                value={socialMediaDetails.X.birthDate}
+                onChange={(e) => handleSocialMediaDetailChange('X', 'birthDate', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Umur realistis (misalnya, 25-40 tahun).</p>
+            </div>
+          </div>
+        );
+        
+      case 'Instagram':
+        return (
+          <div className="space-y-3">
+            <h3 className="font-medium text-sm">Instagram Details</h3>
+            
+            <div>
+              <Label htmlFor="instagram-username">Username:</Label>
+              <Input
+                id="instagram-username"
+                placeholder="@rina.sari"
+                value={socialMediaDetails.Instagram.username}
+                onChange={(e) => handleSocialMediaDetailChange('Instagram', 'username', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Nama simpel, hindari angka acak.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="instagram-displayName">Display Name:</Label>
+              <Input
+                id="instagram-displayName"
+                placeholder="Rina Sari"
+                value={socialMediaDetails.Instagram.displayName}
+                onChange={(e) => handleSocialMediaDetailChange('Instagram', 'displayName', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Nama asli atau panggilan.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="instagram-bio">Bio:</Label>
+              <Textarea
+                id="instagram-bio"
+                placeholder="📸 Pecinta fotografi | Jakarta | #Lifestyle"
+                maxLength={150}
+                value={socialMediaDetails.Instagram.bio}
+                onChange={(e) => handleSocialMediaDetailChange('Instagram', 'bio', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Max 150 karakter, tambah emoji dan hashtag.</p>
+            </div>
+          </div>
+        );
+        
+      case 'TikTok':
+        return (
+          <div className="space-y-3">
+            <h3 className="font-medium text-sm">TikTok Details</h3>
+            
+            <div>
+              <Label htmlFor="tiktok-username">Username:</Label>
+              <Input
+                id="tiktok-username"
+                placeholder="@RinaVibes"
+                value={socialMediaDetails.TikTok.username}
+                onChange={(e) => handleSocialMediaDetailChange('TikTok', 'username', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Nama kreatif, hindari pola bot.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="tiktok-displayName">Display Name:</Label>
+              <Input
+                id="tiktok-displayName"
+                placeholder="Rina"
+                value={socialMediaDetails.TikTok.displayName}
+                onChange={(e) => handleSocialMediaDetailChange('TikTok', 'displayName', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Nama panggilan.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="tiktok-bio">Bio:</Label>
+              <Textarea
+                id="tiktok-bio"
+                placeholder="🎥 Konten seru | Jakarta #FYP"
+                maxLength={80}
+                value={socialMediaDetails.TikTok.bio}
+                onChange={(e) => handleSocialMediaDetailChange('TikTok', 'bio', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Max 80 karakter, tambah emoji.</p>
+            </div>
+          </div>
+        );
+        
+      case 'Facebook':
+        return (
+          <div className="space-y-3">
+            <h3 className="font-medium text-sm">Facebook Details</h3>
+            
+            <div>
+              <Label htmlFor="facebook-name">Nama:</Label>
+              <Input
+                id="facebook-name"
+                placeholder="Rina Sari"
+                value={socialMediaDetails.Facebook.name}
+                onChange={(e) => handleSocialMediaDetailChange('Facebook', 'name', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Nama lengkap realistis, hindari nama fiktif aneh.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="facebook-bio">Bio:</Label>
+              <Textarea
+                id="facebook-bio"
+                placeholder="Hobi jalan-jalan | Jakarta"
+                maxLength={101}
+                value={socialMediaDetails.Facebook.bio}
+                onChange={(e) => handleSocialMediaDetailChange('Facebook', 'bio', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Max 101 karakter.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="facebook-job">Pekerjaan:</Label>
+              <Input
+                id="facebook-job"
+                placeholder="Marketing di PT Sejahtera"
+                value={socialMediaDetails.Facebook.job}
+                onChange={(e) => handleSocialMediaDetailChange('Facebook', 'job', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Jabatan realistis.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="facebook-education">Pendidikan:</Label>
+              <Input
+                id="facebook-education"
+                placeholder="Universitas Indonesia, 2019"
+                value={socialMediaDetails.Facebook.education}
+                onChange={(e) => handleSocialMediaDetailChange('Facebook', 'education', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Sekolah/kuliah realistis.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="facebook-address">Alamat:</Label>
+              <Input
+                id="facebook-address"
+                placeholder="Jakarta, Indonesia"
+                value={socialMediaDetails.Facebook.address}
+                onChange={(e) => handleSocialMediaDetailChange('Facebook', 'address', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Kota atau daerah.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="facebook-relationshipStatus">Status Hubungan (opsional):</Label>
+              <Input
+                id="facebook-relationshipStatus"
+                placeholder="Lajang"
+                value={socialMediaDetails.Facebook.relationshipStatus}
+                onChange={(e) => handleSocialMediaDetailChange('Facebook', 'relationshipStatus', e.target.value)}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="facebook-birthDate">Tanggal Lahir:</Label>
+              <Input
+                id="facebook-birthDate"
+                type="date"
+                value={socialMediaDetails.Facebook.birthDate}
+                onChange={(e) => handleSocialMediaDetailChange('Facebook', 'birthDate', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Umur realistis (misalnya, 25-40 tahun).</p>
+            </div>
+          </div>
+        );
+        
+      case 'YouTube':
+        return (
+          <div className="space-y-3">
+            <h3 className="font-medium text-sm">YouTube Details</h3>
+            
+            <div>
+              <Label htmlFor="youtube-channelName">Nama Channel:</Label>
+              <Input
+                id="youtube-channelName"
+                placeholder="Rina Vlogs"
+                value={socialMediaDetails.YouTube.channelName}
+                onChange={(e) => handleSocialMediaDetailChange('YouTube', 'channelName', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Nama personal atau tematik.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="youtube-bio">Bio:</Label>
+              <Textarea
+                id="youtube-bio"
+                placeholder="Konten lifestyle dan opini | Jakarta"
+                maxLength={1000}
+                value={socialMediaDetails.YouTube.bio}
+                onChange={(e) => handleSocialMediaDetailChange('YouTube', 'bio', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Max 1000 karakter.</p>
+            </div>
+          </div>
+        );
+        
+      case 'Threads':
+        return (
+          <div className="space-y-3">
+            <h3 className="font-medium text-sm">Threads Details</h3>
+            
+            <div>
+              <Label htmlFor="threads-username">Username:</Label>
+              <Input
+                id="threads-username"
+                placeholder="@rina.sari"
+                value={socialMediaDetails.Threads.username}
+                onChange={(e) => handleSocialMediaDetailChange('Threads', 'username', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Sinkron dengan Instagram.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="threads-displayName">Display Name:</Label>
+              <Input
+                id="threads-displayName"
+                placeholder="Rina"
+                value={socialMediaDetails.Threads.displayName}
+                onChange={(e) => handleSocialMediaDetailChange('Threads', 'displayName', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Nama panggilan.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="threads-bio">Bio:</Label>
+              <Textarea
+                id="threads-bio"
+                placeholder="Berbagi opini | Jakarta #Opini"
+                maxLength={160}
+                value={socialMediaDetails.Threads.bio}
+                onChange={(e) => handleSocialMediaDetailChange('Threads', 'bio', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Max 160 karakter.</p>
+            </div>
+          </div>
+        );
+        
+      case 'Blog':
+        return (
+          <div className="space-y-3">
+            <h3 className="font-medium text-sm">Blog Details</h3>
+            
+            <div>
+              <Label htmlFor="blog-authorName">Nama Penulis:</Label>
+              <Input
+                id="blog-authorName"
+                placeholder="Rina Sari"
+                value={socialMediaDetails.Blog.authorName}
+                onChange={(e) => handleSocialMediaDetailChange('Blog', 'authorName', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Nama realistis.</p>
+            </div>
+            
+            <div>
+              <Label htmlFor="blog-bio">Bio:</Label>
+              <Textarea
+                id="blog-bio"
+                placeholder="Penulis lepas, fokus politik dan lifestyle. Jakarta."
+                value={socialMediaDetails.Blog.bio}
+                onChange={(e) => handleSocialMediaDetailChange('Blog', 'bio', e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Max 200 kata.</p>
+            </div>
+          </div>
+        );
+        
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
@@ -245,56 +737,89 @@ const BotManagement = () => {
               Add Bot
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="w-[90vw] max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add Bot</DialogTitle>
               <DialogDescription>
                 Create a new bot to manage your social media presence.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Bot Name</Label>
-                <Input
-                  id="name"
-                  placeholder="e.g., TechInfluencer"
-                  value={botName}
-                  onChange={(e) => setBotName(e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Bot Social Media Links</Label>
-                <div className="space-y-3">
-                  {platforms.map((platform) => (
-                    <div key={platform} className="flex flex-col space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`platform-${platform}`}
-                          checked={selectedPlatforms.includes(platform)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedPlatforms([...selectedPlatforms, platform]);
-                            } else {
-                              setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
-                            }
-                          }}
-                        />
-                        <Label htmlFor={`platform-${platform}`}>{platform}</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Main Bot Info - Left Column */}
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Bot Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="e.g., TechInfluencer"
+                    value={botName}
+                    onChange={(e) => setBotName(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="expertise">Bot Expertise</Label>
+                  <Textarea
+                    id="expertise"
+                    placeholder="Describe this bot's areas of expertise, tone, and style..."
+                    value={botExpertise}
+                    onChange={(e) => setBotExpertise(e.target.value)}
+                    rows={4}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>Bot Social Media Links</Label>
+                  <div className="space-y-3">
+                    {platforms.map((platform) => (
+                      <div key={platform} className="flex flex-col space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`platform-${platform}`}
+                            checked={selectedPlatforms.includes(platform)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedPlatforms([...selectedPlatforms, platform]);
+                              } else {
+                                setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`platform-${platform}`}>{platform}</Label>
+                        </div>
+                        {selectedPlatforms.includes(platform) && (
+                          <Input
+                            placeholder={`${platform} profile link`}
+                            value={socialMediaLinks[platform]}
+                            onChange={(e) => handleSocialMediaLinkChange(platform, e.target.value)}
+                            className="mt-1"
+                          />
+                        )}
                       </div>
-                      {selectedPlatforms.includes(platform) && (
-                        <Input
-                          placeholder={`${platform} profile link`}
-                          value={socialMediaLinks[platform]}
-                          onChange={(e) => handleSocialMediaLinkChange(platform, e.target.value)}
-                        />
-                      )}
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
+              
+              {/* Social Media Details - Right Column */}
+              <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+                <h2 className="text-lg font-semibold">Social Media Details</h2>
+                {selectedPlatforms.length > 0 ? (
+                  <div className="space-y-6 divide-y divide-border">
+                    {selectedPlatforms.map(platform => (
+                      <div key={`details-${platform}`} className="pt-4 first:pt-0">
+                        {renderSocialMediaDetailsForm(platform)}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-muted-foreground text-sm py-4">
+                    Select social media platforms to configure their details.
+                  </div>
+                )}
+              </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="mt-4">
               <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
               <Button className="bg-buzzer-primary" onClick={handleAddBot}>Add Bot</Button>
             </DialogFooter>
@@ -379,56 +904,89 @@ const BotManagement = () => {
 
       {/* Edit Bot Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={handleEditDialogOpenChange}>
-        <DialogContent>
+        <DialogContent className="w-[90vw] max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Bot</DialogTitle>
             <DialogDescription>
               Update this bot's information.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Bot Name</Label>
-              <Input
-                id="edit-name"
-                placeholder="e.g., TechInfluencer"
-                value={botName}
-                onChange={(e) => setBotName(e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label>Bot Social Media Links</Label>
-              <div className="space-y-3">
-                {platforms.map((platform) => (
-                  <div key={platform} className="flex flex-col space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`edit-platform-${platform}`}
-                        checked={selectedPlatforms.includes(platform)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setSelectedPlatforms([...selectedPlatforms, platform]);
-                          } else {
-                            setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
-                          }
-                        }}
-                      />
-                      <Label htmlFor={`edit-platform-${platform}`}>{platform}</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Main Bot Info - Left Column */}
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Bot Name</Label>
+                <Input
+                  id="edit-name"
+                  placeholder="e.g., TechInfluencer"
+                  value={botName}
+                  onChange={(e) => setBotName(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="edit-expertise">Bot Expertise</Label>
+                <Textarea
+                  id="edit-expertise"
+                  placeholder="Describe this bot's areas of expertise, tone, and style..."
+                  value={botExpertise}
+                  onChange={(e) => setBotExpertise(e.target.value)}
+                  rows={4}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Bot Social Media Links</Label>
+                <div className="space-y-3">
+                  {platforms.map((platform) => (
+                    <div key={platform} className="flex flex-col space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`edit-platform-${platform}`}
+                          checked={selectedPlatforms.includes(platform)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedPlatforms([...selectedPlatforms, platform]);
+                            } else {
+                              setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
+                            }
+                          }}
+                        />
+                        <Label htmlFor={`edit-platform-${platform}`}>{platform}</Label>
+                      </div>
+                      {selectedPlatforms.includes(platform) && (
+                        <Input
+                          placeholder={`${platform} profile link`}
+                          value={socialMediaLinks[platform]}
+                          onChange={(e) => handleSocialMediaLinkChange(platform, e.target.value)}
+                          className="mt-1"
+                        />
+                      )}
                     </div>
-                    {selectedPlatforms.includes(platform) && (
-                      <Input
-                        placeholder={`${platform} profile link`}
-                        value={socialMediaLinks[platform]}
-                        onChange={(e) => handleSocialMediaLinkChange(platform, e.target.value)}
-                      />
-                    )}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
+            
+            {/* Social Media Details - Right Column */}
+            <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+              <h2 className="text-lg font-semibold">Social Media Details</h2>
+              {selectedPlatforms.length > 0 ? (
+                <div className="space-y-6 divide-y divide-border">
+                  {selectedPlatforms.map(platform => (
+                    <div key={`edit-details-${platform}`} className="pt-4 first:pt-0">
+                      {renderSocialMediaDetailsForm(platform)}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-muted-foreground text-sm py-4">
+                  Select social media platforms to configure their details.
+                </div>
+              )}
+            </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
             <Button className="bg-buzzer-primary" onClick={handleEditBot}>Save Changes</Button>
           </DialogFooter>
@@ -453,7 +1011,7 @@ const BotManagement = () => {
 
       {/* Bot Details Dialog */}
       <Dialog open={isDetailDialogOpen} onOpenChange={handleDetailDialogOpenChange}>
-        <DialogContent>
+        <DialogContent className="w-[90vw] max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Bot Details</DialogTitle>
             <DialogDescription>
@@ -486,6 +1044,13 @@ const BotManagement = () => {
                   <p className="mt-1">{currentBot.platforms.length}</p>
                 </div>
               </div>
+              
+              {currentBot.expertise && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 mb-2">Expertise</h3>
+                  <p className="mt-1">{currentBot.expertise}</p>
+                </div>
+              )}
               
               <div>
                 <h3 className="text-sm font-medium text-gray-500 mb-2">Platforms</h3>
