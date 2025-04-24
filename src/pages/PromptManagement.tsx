@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Plus, Filter, Calendar, Check, CheckSquare, Zap, FileText } from 'lucide-react';
 import { format } from 'date-fns';
@@ -31,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
+import {
   Popover,
   PopoverContent,
   PopoverTrigger 
@@ -294,7 +293,7 @@ const PromptManagement = () => {
               <SelectValue placeholder="Select Expertise" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Expertise</SelectItem>
+              <SelectItem value="all">All Expertise</SelectItem>
               {expertiseOptions.map((expertise) => (
                 <SelectItem key={expertise} value={expertise}>
                   <div className="flex items-center justify-between w-full">
@@ -319,7 +318,7 @@ const PromptManagement = () => {
               <SelectValue placeholder="Select Topic" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Topics</SelectItem>
+              <SelectItem value="all">All Topics</SelectItem>
               {availableTopics.map((topic) => (
                 <SelectItem key={topic} value={topic}>
                   {topic}

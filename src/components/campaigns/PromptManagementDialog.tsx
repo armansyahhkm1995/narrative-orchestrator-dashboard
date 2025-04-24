@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useData } from '@/context/DataContext';
 import { Prompt } from '@/types/data';
