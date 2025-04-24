@@ -84,7 +84,7 @@ const CampaignDetail = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Campaign Name</TableHead>
-                <TableHead>Comment URL</TableHead>
+                <TableHead>{isReplyType ? 'Comment URL' : 'Topic'}</TableHead>
                 {isReplyType && <TableHead>Narrative Diversion</TableHead>}
                 <TableHead>Sentiment</TableHead>
                 <TableHead>Bots</TableHead>

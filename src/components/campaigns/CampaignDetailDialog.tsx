@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useData } from '@/context/DataContext';
 import { Campaign, CampaignType } from '@/types/data';
 import { BarChart3, ThumbsUp, MessageSquare, Share2, Bot, Link } from 'lucide-react';
@@ -27,6 +27,13 @@ import {
   Cell,
 } from 'recharts';
 import { Dialog as ShadDialog } from '@radix-ui/react-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface CampaignDetailDialogProps {
   campaign: Campaign;
@@ -35,9 +42,21 @@ interface CampaignDetailDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const reactionIntervals = [
+  { value: '1min', label: '1 minute' },
+  { value: '4min', label: '4 minutes' },
+  { value: '10min', label: '10 minutes' },
+  { value: '30min', label: '30 minutes' },
+  { value: '1h', label: '1 hour' },
+  { value: '5h', label: '5 hours' },
+  { value: '1d', label: '1 day' },
+  { value: '7d', label: '7 days' },
+];
+
 const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: CampaignDetailDialogProps) => {
   const { bots, campaignFolders, dashboardMetrics } = useData();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const [reactionInterval, setReactionInterval] = useState('30min');
   
   const folder = campaignFolders.find(f => f.id === folderId);
   const isReplyType = folder?.campaignType === 'reply';
@@ -62,13 +81,50 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
   const engagementColors = ['#8b5cf6', '#3b82f6', '#f97316'];
   
   const commentsFeed = [
-    { id: 1, text: 'Great initiative! This is exactly what we need.', sentiment: 'positive', platform: 'X', date: '2h ago' },
-    { id: 2, text: 'Not sure if this will work as intended. Needs more detail.', sentiment: 'neutral', platform: 'Instagram', date: '3h ago' },
-    { id: 3, text: 'This seems problematic on many levels.', sentiment: 'negative', platform: 'Facebook', date: '5h ago' },
-    { id: 4, text: 'Love the approach! Innovative and thoughtful.', sentiment: 'positive', platform: 'Blog', date: '6h ago' },
-    { id: 5, text: 'Looking forward to more updates on this.', sentiment: 'positive', platform: 'X', date: '12h ago' },
+    { 
+      id: 1, 
+      text: 'Great initiative! This is exactly what we need.', 
+      sentiment: 'positive',
+      date: '2h ago',
+      replies: [] 
+    },
+    { 
+      id: 2, 
+      text: 'This seems problematic on many levels. You clearly have no idea what you are talking about.',
+      sentiment: 'negative',
+      date: '3h ago',
+      replies: [
+        {
+          id: 21,
+          text: 'While we understand your concerns, we believe in constructive dialogue. Our approach is based on extensive research and real-world examples that demonstrate positive outcomes.',
+          isBot: true,
+          botName: 'EcoBot',
+          date: '2h 45min ago'
+        },
+        {
+          id: 22,
+          text: 'You are just trying to manipulate the narrative!',
+          sentiment: 'negative',
+          date: '2h 30min ago'
+        },
+        {
+          id: 23,
+          text: 'Let me share some factual data that might help clarify our position and address your concerns constructively.',
+          isBot: true,
+          botName: 'EcoBot',
+          date: '2h ago'
+        }
+      ]
+    },
+    { 
+      id: 3, 
+      text: 'Looking forward to more updates on this.', 
+      sentiment: 'positive',
+      date: '5h ago',
+      replies: [] 
+    },
   ];
-  
+
   const getSentimentColor = (sentiment: string) => {
     switch (sentiment.toLowerCase()) {
       case 'positive':
@@ -100,7 +156,9 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
               <DialogDescription className="mt-1">
                 <div className="flex flex-col gap-2">
                   <span>Created on {new Date(campaign.createdAt).toLocaleDateString()}</span>
-                  <span className="font-medium">Comment URL: {updatedCampaign.topic}</span>
+                  <span className="font-medium">
+                    {folder?.campaignType === 'reply' ? 'Comment URL:' : 'Topic:'} {updatedCampaign.topic}
+                  </span>
                 </div>
               </DialogDescription>
             </div>
@@ -264,21 +322,66 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
           
           <Separator className="my-6" />
           
-          <div className="space-y-4 lg:col-span-3">
-            <h3 className="text-base font-medium flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Live Comment Feed
-            </h3>
-            <div className="space-y-3">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-medium flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Live Comment Feed
+              </h3>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Bot reaction interval:</span>
+                <Select
+                  value={reactionInterval}
+                  onValueChange={setReactionInterval}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select interval" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {reactionIntervals.map((interval) => (
+                      <SelectItem key={interval.value} value={interval.value}>
+                        {interval.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-6">
               {commentsFeed.map(comment => (
-                <div key={comment.id} className="p-3 rounded-md border">
-                  <div className="flex justify-between items-start mb-1">
-                    <Badge variant="outline" className={getSentimentColor(comment.sentiment)}>
-                      {comment.sentiment}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">{comment.date}</span>
+                <div key={comment.id} className="space-y-3">
+                  <div className="p-3 rounded-md border">
+                    <div className="flex justify-between items-start mb-1">
+                      <Badge variant="outline" className={getSentimentColor(comment.sentiment)}>
+                        {comment.sentiment}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">{comment.date}</span>
+                    </div>
+                    <p className="text-sm">{comment.text}</p>
                   </div>
-                  <p className="text-sm">{comment.text}</p>
+                  
+                  {comment.replies && comment.replies.length > 0 && (
+                    <div className="ml-8 space-y-3">
+                      {comment.replies.map(reply => (
+                        <div key={reply.id} className={`p-3 rounded-md border ${reply.isBot ? 'bg-purple-50' : ''}`}>
+                          <div className="flex justify-between items-start mb-1">
+                            {reply.isBot ? (
+                              <Badge variant="outline" className="bg-purple-100 text-purple-700">
+                                {reply.botName}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className={getSentimentColor(reply.sentiment)}>
+                                {reply.sentiment || 'neutral'}
+                              </Badge>
+                            )}
+                            <span className="text-xs text-muted-foreground">{reply.date}</span>
+                          </div>
+                          <p className="text-sm">{reply.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
