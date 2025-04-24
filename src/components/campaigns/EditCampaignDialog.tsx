@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useData } from '@/context/DataContext';
 import { Campaign } from '@/types/data';
-import { Edit, Sparkles, BookMarked } from 'lucide-react';
+import { Edit, Sparkles, BookMarked, Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -59,11 +59,14 @@ interface EditCampaignDialogProps {
 }
 
 const EditCampaignDialog = ({ campaign, folderId, open, onOpenChange }: EditCampaignDialogProps) => {
-  const { bots, updateCampaign } = useData();
+  const { bots, updateCampaign, campaignFolders } = useData();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedBots, setSelectedBots] = useState<string[]>(campaign.bots);
   const [isGeneratingNarrative, setIsGeneratingNarrative] = useState(false);
   const [isPromptManagementOpen, setIsPromptManagementOpen] = useState(false);
+  
+  const folder = campaignFolders.find(f => f.id === folderId);
+  const isReplyType = folder?.campaignType === 'reply';
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -187,9 +190,12 @@ const EditCampaignDialog = ({ campaign, folderId, open, onOpenChange }: EditCamp
                 name="topic"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Topic</FormLabel>
+                    <FormLabel>{isReplyType ? 'Comment URL' : 'Topic'}</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input 
+                        {...field} 
+                        placeholder={isReplyType ? "https://platform.com/post/comment" : "e.g., Sustainable Products"} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,8 +1,8 @@
 
 import { useRef } from 'react';
 import { useData } from '@/context/DataContext';
-import { Campaign } from '@/types/data';
-import { BarChart3, ThumbsUp, MessageSquare, Share2, Bot } from 'lucide-react';
+import { Campaign, CampaignType } from '@/types/data';
+import { BarChart3, ThumbsUp, MessageSquare, Share2, Bot, Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -37,8 +37,12 @@ interface CampaignDetailDialogProps {
 }
 
 const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: CampaignDetailDialogProps) => {
-  const { bots, dashboardMetrics } = useData();
+  const { bots, campaignFolders, dashboardMetrics } = useData();
   const dialogRef = useRef<HTMLDivElement>(null);
+  
+  // Get campaign folder to determine type
+  const folder = campaignFolders.find(f => f.id === folderId);
+  const isReplyType = folder?.campaignType === 'reply';
   
   // Get bots assigned to this campaign
   const assignedBots = bots.filter(bot => campaign.bots.includes(bot.id));
@@ -53,7 +57,14 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
     { name: 'Neutral', value: campaign.sentimentAnalysis.neutral },
   ];
   
+  const engagementPieData = [
+    { name: 'Likes', value: campaign.engagement.likes },
+    { name: 'Comments', value: campaign.engagement.comments },
+    { name: 'Shares', value: campaign.engagement.shares },
+  ];
+  
   const sentimentColors = ['#10b981', '#ef4444', '#3b82f6'];
+  const engagementColors = ['#8b5cf6', '#3b82f6', '#f97316'];
   
   // Mock data for comments feed
   const commentsFeed = [
@@ -97,10 +108,20 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Campaign details */}
             <div className="lg:col-span-2 space-y-4">
-              <div>
-                <h3 className="text-base font-medium">Topic</h3>
-                <p className="text-muted-foreground">{campaign.topic}</p>
-              </div>
+              {isReplyType ? (
+                <div>
+                  <h3 className="text-base font-medium flex items-center gap-2">
+                    <Link className="h-4 w-4" />
+                    Comment URL
+                  </h3>
+                  <p className="text-muted-foreground break-all">{campaign.topic}</p>
+                </div>
+              ) : (
+                <div>
+                  <h3 className="text-base font-medium">Topic</h3>
+                  <p className="text-muted-foreground">{campaign.topic}</p>
+                </div>
+              )}
               
               <div>
                 <h3 className="text-base font-medium">Narrative Diversion</h3>
@@ -183,25 +204,60 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
           
           <Separator className="my-6" />
           
-          {/* Engagement chart */}
-          <div className="space-y-4">
-            <h3 className="text-base font-medium flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Engagement History
-            </h3>
-            <div className="rounded-md border p-4">
-              <ResponsiveContainer width="100%" height={250}>
-                <LineChart data={engagementData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="likes" stroke="#8b5cf6" activeDot={{ r: 8 }} />
-                  <Line type="monotone" dataKey="shares" stroke="#f97316" />
-                  <Line type="monotone" dataKey="comments" stroke="#3b82f6" />
-                </LineChart>
-              </ResponsiveContainer>
+          {/* Engagement charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Engagement history chart */}
+            <div className="space-y-4">
+              <h3 className="text-base font-medium flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Engagement History
+              </h3>
+              <div className="rounded-md border p-4">
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={engagementData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="likes" stroke="#8b5cf6" activeDot={{ r: 8 }} />
+                    <Line type="monotone" dataKey="shares" stroke="#f97316" />
+                    <Line type="monotone" dataKey="comments" stroke="#3b82f6" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+            
+            {/* Engagement pie chart */}
+            <div className="space-y-4">
+              <h3 className="text-base font-medium flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Engagement Distribution
+              </h3>
+              <div className="rounded-md border p-4">
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={engagementPieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={40}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      paddingAngle={2}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      labelLine={false}
+                    >
+                      {engagementPieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={engagementColors[index % engagementColors.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `${value}`} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
           
@@ -211,7 +267,7 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
           <div className="space-y-4">
             <h3 className="text-base font-medium flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
-              Recent Comments
+              Live Comment Feed
             </h3>
             <div className="space-y-3">
               {commentsFeed.map(comment => (

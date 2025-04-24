@@ -29,7 +29,7 @@ export type CampaignType = 'post' | 'reply';
 export interface Campaign {
   id: string;
   name: string;
-  topic: string;
+  topic: string;         // Used for Post campaigns or as Comment URL for Reply campaigns
   narrative: string;
   sentiment: 'positive' | 'negative' | 'neutral';
   bots: string[]; // Bot IDs

@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { PlusCircle, ArrowLeft, MessageSquare, SendHorizonal } from 'lucide-react';
+import { PlusCircle, ArrowLeft, MessageSquare, SendHorizonal, Eye, Edit } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import CreateCampaignDialog from '@/components/campaigns/CreateCampaignDialog';
+import CampaignDetailDialog from '@/components/campaigns/CampaignDetailDialog';
+import EditCampaignDialog from '@/components/campaigns/EditCampaignDialog';
 import { Campaign } from '@/types/data';
 
 const CampaignDetail = () => {
@@ -24,6 +26,8 @@ const CampaignDetail = () => {
   const { campaignFolders } = useData();
   const { toast } = useToast();
   const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false);
+  const [viewCampaign, setViewCampaign] = useState<Campaign | null>(null);
+  const [editCampaign, setEditCampaign] = useState<Campaign | null>(null);
   
   const folder = campaignFolders.find(f => f.id === folderId);
   
@@ -41,6 +45,7 @@ const CampaignDetail = () => {
   }
   
   const { campaigns } = folder;
+  const isReplyType = folder.campaignType === 'reply';
 
   return (
     <div className="space-y-6">
@@ -112,18 +117,34 @@ const CampaignDetail = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Topic</TableHead>
+                <TableHead>Campaign Name</TableHead>
+                {isReplyType ? (
+                  <TableHead>Comment URL</TableHead>
+                ) : (
+                  <TableHead>Topic</TableHead>
+                )}
+                {isReplyType && <TableHead>Narrative Diversion</TableHead>}
                 <TableHead>Sentiment</TableHead>
                 <TableHead>Bots</TableHead>
-                <TableHead className="text-right">Engagement</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {campaigns.map((campaign) => (
                 <TableRow key={campaign.id}>
                   <TableCell className="font-medium">{campaign.name}</TableCell>
-                  <TableCell>{campaign.topic}</TableCell>
+                  {isReplyType ? (
+                    <TableCell className="max-w-[300px] truncate">
+                      {campaign.topic}
+                    </TableCell>
+                  ) : (
+                    <TableCell>{campaign.topic}</TableCell>
+                  )}
+                  {isReplyType && (
+                    <TableCell className="max-w-[300px] truncate">
+                      {campaign.narrative}
+                    </TableCell>
+                  )}
                   <TableCell>
                     <Badge variant="outline" className={getSentimentClassName(campaign.sentiment)}>
                       {campaign.sentiment}
@@ -131,10 +152,26 @@ const CampaignDetail = () => {
                   </TableCell>
                   <TableCell>{campaign.bots.length}</TableCell>
                   <TableCell className="text-right">
-                    <span className="flex items-center justify-end gap-2">
-                      <Badge variant="secondary">{campaign.engagement.likes} likes</Badge>
-                      <Badge variant="secondary">{campaign.engagement.comments} comments</Badge>
-                    </span>
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="flex items-center gap-1" 
+                        onClick={() => setViewCampaign(campaign)}
+                      >
+                        <Eye className="h-4 w-4" />
+                        <span className="hidden sm:inline">Detail</span>
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        className="flex items-center gap-1" 
+                        onClick={() => setEditCampaign(campaign)}
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span className="hidden sm:inline">Edit</span>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -148,6 +185,24 @@ const CampaignDetail = () => {
         onOpenChange={setIsCreateCampaignOpen}
         folderId={folderId}
       />
+      
+      {viewCampaign && (
+        <CampaignDetailDialog
+          campaign={viewCampaign}
+          folderId={folderId || ''}
+          open={!!viewCampaign}
+          onOpenChange={(open) => !open && setViewCampaign(null)}
+        />
+      )}
+      
+      {editCampaign && (
+        <EditCampaignDialog
+          campaign={editCampaign}
+          folderId={folderId || ''}
+          open={!!editCampaign}
+          onOpenChange={(open) => !open && setEditCampaign(null)}
+        />
+      )}
     </div>
   );
 };

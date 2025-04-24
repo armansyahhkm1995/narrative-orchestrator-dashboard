@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useData } from '@/context/DataContext';
-import { PlusCircle, Bot, Sparkles, BookMarked } from 'lucide-react';
+import { PlusCircle, Bot, Sparkles, BookMarked, Link } from 'lucide-react';
 import { SocialMediaPlatform } from '@/types/data';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,7 +43,7 @@ import PromptManagementDialog from './PromptManagementDialog';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: 'Campaign name must be at least 3 characters' }),
-  topic: z.string().min(3, { message: 'Topic must be at least 3 characters' }),
+  topic: z.string().min(3, { message: 'Topic/URL must be at least 3 characters' }),
   narrative: z.string().min(10, { message: 'Narrative diversion must be at least 10 characters' }),
   sentiment: z.enum(['positive', 'negative', 'neutral']),
   bots: z.array(z.string()).min(1, { message: 'Select at least one bot' }),
@@ -63,6 +63,9 @@ const CreateCampaignDialog = ({ folderId, open, onOpenChange }: CreateCampaignDi
   const [selectedBots, setSelectedBots] = useState<string[]>([]);
   const [isGeneratingNarrative, setIsGeneratingNarrative] = useState(false);
   const [isPromptManagementOpen, setIsPromptManagementOpen] = useState(false);
+  
+  const folder = folderId ? campaignFolders.find(f => f.id === folderId) : null;
+  const isReplyType = folder?.campaignType === 'reply';
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -197,9 +200,19 @@ const CreateCampaignDialog = ({ folderId, open, onOpenChange }: CreateCampaignDi
                 name="topic"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Topic</FormLabel>
+                    <FormLabel>
+                      {isReplyType ? (
+                        <span className="flex items-center gap-1">
+                          <Link className="h-4 w-4" />
+                          Comment URL
+                        </span>
+                      ) : 'Topic'}
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Sustainable Products" {...field} />
+                      <Input 
+                        placeholder={isReplyType ? "https://platform.com/post/comment" : "e.g., Sustainable Products"} 
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
