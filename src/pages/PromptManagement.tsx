@@ -39,7 +39,6 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-// Sample data for expertise/professions
 const expertiseOptions = [
   "Farmer", 
   "Doctor", 
@@ -50,7 +49,6 @@ const expertiseOptions = [
   "Journalist"
 ];
 
-// Sample topics per expertise
 const topicsByExpertise = {
   "Farmer": ["IoT in Rice Monitoring", "Organic Farming Techniques", "Sustainable Agriculture"],
   "Doctor": ["Telemedicine Adoption", "Modern Surgical Techniques", "Preventive Healthcare"],
@@ -61,7 +59,6 @@ const topicsByExpertise = {
   "Journalist": ["Media Bias", "Digital Journalism", "Investigative Techniques"]
 };
 
-// Sample data for counter prompts
 const initialCounterPrompts = [
   {
     id: '1',
@@ -119,14 +116,12 @@ const PromptManagement = () => {
   const [selectedTopic, setSelectedTopic] = useState<string>("");
   const [availableTopics, setAvailableTopics] = useState<string[]>([]);
   const [isAddCommentOpen, setIsAddCommentOpen] = useState(false);
-  const [commentUrl, setCommentUrl] = useState("");
   const [commentText, setCommentText] = useState("");
   const [generatedCounters, setGeneratedCounters] = useState<GeneratedCounter[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   
-  // Update available topics when expertise changes
   useEffect(() => {
     if (selectedExpertise) {
       setAvailableTopics(topicsByExpertise[selectedExpertise as keyof typeof topicsByExpertise] || []);
@@ -136,19 +131,15 @@ const PromptManagement = () => {
     }
   }, [selectedExpertise]);
   
-  // Filter counter prompts based on selected filters
   const filteredPrompts = counterPrompts.filter(prompt => {
-    // Filter by expertise
     if (selectedExpertise && prompt.expertise !== selectedExpertise) {
       return false;
     }
     
-    // Filter by topic
     if (selectedTopic && prompt.topic !== selectedTopic) {
       return false;
     }
     
-    // Filter by date
     if (selectedDate) {
       const promptDate = new Date(prompt.createdAt);
       return (
@@ -161,13 +152,11 @@ const PromptManagement = () => {
     return true;
   });
 
-  // Count new items for each expertise
   const newCountersByExpertise = expertiseOptions.map(expertise => ({
     expertise,
     count: counterPrompts.filter(p => p.expertise === expertise && p.isNew).length
   }));
 
-  // Generate counter prompts based on comment
   const handleGenerateCounters = () => {
     if (!commentText.trim()) {
       toast({
@@ -180,9 +169,7 @@ const PromptManagement = () => {
     
     setIsGenerating(true);
     
-    // Simulate AI generation with a timeout
     setTimeout(() => {
-      // Mock generated counters
       const mockCounters = [
         {
           id: `gen-${Date.now()}-1`,
@@ -211,7 +198,6 @@ const PromptManagement = () => {
     }, 1500);
   };
 
-  // Toggle selection for individual counter
   const toggleCounterSelection = (id: string) => {
     setGeneratedCounters(prevCounters =>
       prevCounters.map(counter =>
@@ -220,7 +206,6 @@ const PromptManagement = () => {
     );
   };
 
-  // Toggle selection for all counters
   const toggleAllCounters = () => {
     const allSelected = generatedCounters.every(counter => counter.selected);
     setGeneratedCounters(prevCounters =>
@@ -228,7 +213,6 @@ const PromptManagement = () => {
     );
   };
 
-  // Add selected counters to prompt management
   const addSelectedCountersToPromptManagement = () => {
     const selectedCounters = generatedCounters.filter(counter => counter.selected);
     
@@ -243,8 +227,6 @@ const PromptManagement = () => {
     
     const now = new Date().toISOString();
     
-    // Let's assume the detected expertise is "Farmer" and topic is "IoT in Rice Monitoring"
-    // In a real application, this would be determined by an AI
     const detectedExpertise = "Farmer";
     const detectedTopic = "IoT in Rice Monitoring";
     
@@ -259,7 +241,6 @@ const PromptManagement = () => {
     
     setCounterPrompts(prev => [...newCounterPrompts, ...prev]);
     setIsAddCommentOpen(false);
-    setCommentUrl("");
     setCommentText("");
     setGeneratedCounters([]);
     
@@ -269,7 +250,6 @@ const PromptManagement = () => {
     });
   };
 
-  // Clear all filters
   const clearFilters = () => {
     setSelectedExpertise("");
     setSelectedTopic("");
@@ -391,39 +371,26 @@ const PromptManagement = () => {
         </Table>
       </div>
 
-      {/* Add Comment Modal */}
       <Dialog open={isAddCommentOpen} onOpenChange={setIsAddCommentOpen}>
         <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
             <DialogTitle>Add New Comment for Counter Generation</DialogTitle>
             <DialogDescription>
-              Enter a comment URL and text to generate counter arguments.
+              Enter a topic or comment to generate counter arguments.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-6">
             <div className="space-y-4">
               <div>
-                <label htmlFor="comment-url" className="text-sm font-medium">
-                  Comment URL
-                </label>
-                <Input
-                  id="comment-url"
-                  value={commentUrl}
-                  onChange={(e) => setCommentUrl(e.target.value)}
-                  placeholder="https://x.com/comment/1234"
-                />
-              </div>
-              
-              <div>
                 <label htmlFor="comment-text" className="text-sm font-medium">
-                  Comment Text
+                  Topic/Comment
                 </label>
                 <Textarea
                   id="comment-text"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
-                  placeholder="Enter the comment text here..."
+                  placeholder="Enter the topic or comment here..."
                   className="min-h-[100px]"
                 />
               </div>
