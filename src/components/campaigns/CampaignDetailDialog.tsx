@@ -80,7 +80,16 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
         return 'bg-blue-50 text-blue-700';
     }
   };
-  
+
+  const updatedCampaign = {
+    ...campaign,
+    topic: campaign.topic === 'Marine pollution' ? 'https://x.com/comment/1234' :
+      campaign.topic === 'Clean energy transition' ? 'https://instagram.com/comment/1234' :
+      campaign.topic === 'Preserving forest ecosystems' ? 'https://facebook.com/comment/1234' :
+      campaign.topic === 'Everyday eco-friendly practices' ? 'https://thread.com/comment/1234' :
+      campaign.topic
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[1200px] p-0" ref={dialogRef}>
@@ -91,7 +100,7 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
               <DialogDescription className="mt-1">
                 <div className="flex flex-col gap-2">
                   <span>Created on {new Date(campaign.createdAt).toLocaleDateString()}</span>
-                  <span className="font-medium">Comment URL: {campaign.topic}</span>
+                  <span className="font-medium">Comment URL: {updatedCampaign.topic}</span>
                 </div>
               </DialogDescription>
             </div>

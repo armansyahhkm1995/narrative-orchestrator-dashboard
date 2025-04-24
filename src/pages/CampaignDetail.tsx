@@ -11,6 +11,7 @@ import CreateCampaignDialog from '@/components/campaigns/CreateCampaignDialog';
 import CampaignDetailDialog from '@/components/campaigns/CampaignDetailDialog';
 import EditCampaignDialog from '@/components/campaigns/EditCampaignDialog';
 import { Campaign } from '@/types/data';
+
 const CampaignDetail = () => {
   const {
     folderId
@@ -40,6 +41,7 @@ const CampaignDetail = () => {
     campaigns
   } = folder;
   const isReplyType = folder.campaignType === 'reply';
+
   return <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
@@ -90,33 +92,43 @@ const CampaignDetail = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {campaigns.map(campaign => <TableRow key={campaign.id}>
-                  <TableCell className="font-medium">{campaign.name}</TableCell>
-                  <TableCell className="max-w-[300px] truncate">
-                    {campaign.topic}
-                  </TableCell>
-                  {isReplyType && <TableCell className="max-w-[300px] truncate">
+              {campaigns.map(campaign => {
+                const updatedTopic = campaign.topic === 'Marine pollution' ? 'https://x.com/comment/1234' :
+                  campaign.topic === 'Clean energy transition' ? 'https://instagram.com/comment/1234' :
+                  campaign.topic === 'Preserving forest ecosystems' ? 'https://facebook.com/comment/1234' :
+                  campaign.topic === 'Everyday eco-friendly practices' ? 'https://thread.com/comment/1234' :
+                  campaign.topic;
+
+                return (
+                  <TableRow key={campaign.id}>
+                    <TableCell className="font-medium">{campaign.name}</TableCell>
+                    <TableCell className="max-w-[300px] truncate">
+                      {updatedTopic}
+                    </TableCell>
+                    {isReplyType && <TableCell className="max-w-[300px] truncate">
                       {campaign.narrative}
                     </TableCell>}
-                  <TableCell>
-                    <Badge variant="outline" className={getSentimentClassName(campaign.sentiment)}>
-                      {campaign.sentiment}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{campaign.bots.length}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm" className="flex items-center gap-1" onClick={() => setViewCampaign(campaign)}>
-                        <Eye className="h-4 w-4" />
-                        <span className="hidden sm:inline">Detail</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="flex items-center gap-1" onClick={() => setEditCampaign(campaign)}>
-                        <Edit className="h-4 w-4" />
-                        <span className="hidden sm:inline">Edit</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>)}
+                    <TableCell>
+                      <Badge variant="outline" className={getSentimentClassName(campaign.sentiment)}>
+                        {campaign.sentiment}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{campaign.bots.length}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button variant="ghost" size="sm" className="flex items-center gap-1" onClick={() => setViewCampaign({...campaign, topic: updatedTopic})}>
+                          <Eye className="h-4 w-4" />
+                          <span className="hidden sm:inline">Detail</span>
+                        </Button>
+                        <Button variant="ghost" size="sm" className="flex items-center gap-1" onClick={() => setEditCampaign({...campaign, topic: updatedTopic})}>
+                          <Edit className="h-4 w-4" />
+                          <span className="hidden sm:inline">Edit</span>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>}
       </div>
@@ -128,6 +140,7 @@ const CampaignDetail = () => {
       {editCampaign && <EditCampaignDialog campaign={editCampaign} folderId={folderId || ''} open={!!editCampaign} onOpenChange={open => !open && setEditCampaign(null)} />}
     </div>;
 };
+
 const getSentimentClassName = (sentiment: string) => {
   switch (sentiment) {
     case 'positive':
@@ -139,4 +152,5 @@ const getSentimentClassName = (sentiment: string) => {
       return 'bg-blue-50 text-blue-700';
   }
 };
+
 export default CampaignDetail;

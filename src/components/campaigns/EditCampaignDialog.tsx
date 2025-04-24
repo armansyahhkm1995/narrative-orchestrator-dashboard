@@ -67,11 +67,26 @@ const EditCampaignDialog = ({ campaign, folderId, open, onOpenChange }: EditCamp
   const folder = campaignFolders.find(f => f.id === folderId);
   const isReplyType = folder?.campaignType === 'reply';
   
+  const getDefaultTopic = () => {
+    switch (campaign.topic) {
+      case 'Marine pollution':
+        return 'https://x.com/comment/1234';
+      case 'Clean energy transition':
+        return 'https://instagram.com/comment/1234';
+      case 'Preserving forest ecosystems':
+        return 'https://facebook.com/comment/1234';
+      case 'Everyday eco-friendly practices':
+        return 'https://thread.com/comment/1234';
+      default:
+        return campaign.topic;
+    }
+  };
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: campaign.name,
-      topic: campaign.topic,
+      topic: getDefaultTopic(),
       narrative: campaign.narrative,
       sentiment: campaign.sentiment,
       bots: campaign.bots,
