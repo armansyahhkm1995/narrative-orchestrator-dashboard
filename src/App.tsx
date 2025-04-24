@@ -10,6 +10,7 @@ import Layout from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import BotManagement from "./pages/BotManagement";
 import Campaigns from "./pages/Campaigns";
+import CampaignDetail from "./pages/CampaignDetail";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
@@ -30,6 +31,7 @@ const App = () => (
                 <Route index element={<Dashboard />} />
                 <Route path="/bots" element={<BotManagement />} />
                 <Route path="/campaigns" element={<Campaigns />} />
+                <Route path="/campaigns/:folderId" element={<CampaignDetail />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="*" element={<NotFound />} />

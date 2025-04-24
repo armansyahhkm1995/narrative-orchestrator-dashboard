@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   Bot, 
@@ -5,7 +6,8 @@ import {
   Campaign, 
   Prompt, 
   DashboardMetrics,
-  SocialMediaPlatform
+  SocialMediaPlatform,
+  CampaignType
 } from '../types/data';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -40,6 +42,7 @@ const generateSampleData = () => {
       name: 'Product Launch',
       description: 'Campaigns for new tech product launch',
       createdAt: '2025-03-15T08:00:00Z',
+      campaignType: 'post',
       campaigns: [
         {
           id: '1',
@@ -92,6 +95,8 @@ const generateSampleData = () => {
       name: 'Sustainability Initiative',
       description: 'Environmental awareness campaigns',
       createdAt: '2025-03-25T11:20:00Z',
+      campaignType: 'reply',
+      commentUrls: ['https://twitter.com/example/status/123', 'https://facebook.com/post/456'],
       campaigns: [
         {
           id: '2',

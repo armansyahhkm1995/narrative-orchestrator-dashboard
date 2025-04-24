@@ -20,7 +20,11 @@ export interface CampaignFolder {
   description: string;
   campaigns: Campaign[];
   createdAt: string;
+  campaignType: CampaignType;
+  commentUrls?: string[]; // For reply campaigns
 }
+
+export type CampaignType = 'post' | 'reply';
 
 export interface Campaign {
   id: string;
