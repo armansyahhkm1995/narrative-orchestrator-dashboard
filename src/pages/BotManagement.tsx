@@ -769,7 +769,7 @@ const BotManagement = () => {
               Add Bot
             </Button>
           </DialogTrigger>
-          <DialogContent className="w-[90vw] max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] max-w-[1400px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add Bot</DialogTitle>
               <DialogDescription>
@@ -928,7 +928,7 @@ const BotManagement = () => {
       </div>
 
       <Dialog open={isEditDialogOpen} onOpenChange={handleEditDialogOpenChange}>
-        <DialogContent className="w-[90vw] max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] max-w-[1400px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Bot</DialogTitle>
             <DialogDescription>
