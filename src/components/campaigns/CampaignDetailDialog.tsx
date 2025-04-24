@@ -1,4 +1,3 @@
-
 import { useRef } from 'react';
 import { useData } from '@/context/DataContext';
 import { Campaign, CampaignType } from '@/types/data';
@@ -40,17 +39,13 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
   const { bots, campaignFolders, dashboardMetrics } = useData();
   const dialogRef = useRef<HTMLDivElement>(null);
   
-  // Get campaign folder to determine type
   const folder = campaignFolders.find(f => f.id === folderId);
   const isReplyType = folder?.campaignType === 'reply';
   
-  // Get bots assigned to this campaign
   const assignedBots = bots.filter(bot => campaign.bots.includes(bot.id));
   
-  // Mock data for engagement chart
   const engagementData = dashboardMetrics.engagementHistory.slice(0, 7);
   
-  // Mock data for sentiment pie chart
   const sentimentData = [
     { name: 'Positive', value: campaign.sentimentAnalysis.positive },
     { name: 'Negative', value: campaign.sentimentAnalysis.negative },
@@ -66,7 +61,6 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
   const sentimentColors = ['#10b981', '#ef4444', '#3b82f6'];
   const engagementColors = ['#8b5cf6', '#3b82f6', '#f97316'];
   
-  // Mock data for comments feed
   const commentsFeed = [
     { id: 1, text: 'Great initiative! This is exactly what we need.', sentiment: 'positive', platform: 'X', date: '2h ago' },
     { id: 2, text: 'Not sure if this will work as intended. Needs more detail.', sentiment: 'neutral', platform: 'Instagram', date: '3h ago' },
@@ -89,13 +83,16 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[900px] p-0" ref={dialogRef}>
+      <DialogContent className="sm:max-w-[1200px] p-0" ref={dialogRef}>
         <DialogHeader className="p-6 border-b">
           <div className="flex justify-between items-center">
             <div>
               <DialogTitle className="text-xl font-bold">{campaign.name}</DialogTitle>
               <DialogDescription className="mt-1">
-                Created on {new Date(campaign.createdAt).toLocaleDateString()}
+                <div className="flex flex-col gap-2">
+                  <span>Created on {new Date(campaign.createdAt).toLocaleDateString()}</span>
+                  <span className="font-medium">Comment URL: {campaign.topic}</span>
+                </div>
               </DialogDescription>
             </div>
             <Badge variant="outline" className={`px-2 py-1 ${getSentimentColor(campaign.sentiment)}`}>
@@ -104,9 +101,8 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
           </div>
         </DialogHeader>
         
-        <div className="p-6 max-h-[70vh] overflow-y-auto">
+        <div className="p-6 max-h-[80vh] overflow-y-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Campaign details */}
             <div className="lg:col-span-2 space-y-4">
               {isReplyType ? (
                 <div>
@@ -155,7 +151,6 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
               </div>
             </div>
             
-            {/* Engagement metrics */}
             <div className="lg:col-span-1 space-y-4">
               <div className="grid grid-cols-3 gap-2">
                 <div className="p-3 rounded-md border text-center">
@@ -204,9 +199,7 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
           
           <Separator className="my-6" />
           
-          {/* Engagement charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Engagement history chart */}
             <div className="space-y-4">
               <h3 className="text-base font-medium flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
@@ -228,7 +221,6 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
               </div>
             </div>
             
-            {/* Engagement pie chart */}
             <div className="space-y-4">
               <h3 className="text-base font-medium flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
@@ -263,8 +255,7 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
           
           <Separator className="my-6" />
           
-          {/* Comments feed */}
-          <div className="space-y-4">
+          <div className="space-y-4 lg:col-span-3">
             <h3 className="text-base font-medium flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Live Comment Feed
@@ -276,11 +267,7 @@ const CampaignDetailDialog = ({ campaign, folderId, open, onOpenChange }: Campai
                     <Badge variant="outline" className={getSentimentColor(comment.sentiment)}>
                       {comment.sentiment}
                     </Badge>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{comment.platform}</span>
-                      <span>•</span>
-                      <span>{comment.date}</span>
-                    </div>
+                    <span className="text-xs text-muted-foreground">{comment.date}</span>
                   </div>
                   <p className="text-sm">{comment.text}</p>
                 </div>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -116,7 +115,6 @@ const EditCampaignDialog = ({ campaign, folderId, open, onOpenChange }: EditCamp
     });
   };
 
-  // Generate a counter narrative based on the topic
   const generateCounterNarrative = () => {
     const topic = form.getValues('topic');
     
@@ -127,9 +125,7 @@ const EditCampaignDialog = ({ campaign, folderId, open, onOpenChange }: EditCamp
     
     setIsGeneratingNarrative(true);
     
-    // Simulate AI generation with a timeout
     setTimeout(() => {
-      // Example generated counter narratives based on topic keywords
       let generatedNarrative = '';
       
       if (topic.toLowerCase().includes('climate')) {
@@ -148,7 +144,6 @@ const EditCampaignDialog = ({ campaign, folderId, open, onOpenChange }: EditCamp
     }, 1500);
   };
 
-  // Handle selecting a prompt from prompt management
   const handleSelectPrompt = (promptContent: string) => {
     form.setValue('narrative', promptContent);
     setIsPromptManagementOpen(false);
@@ -190,12 +185,9 @@ const EditCampaignDialog = ({ campaign, folderId, open, onOpenChange }: EditCamp
                 name="topic"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{isReplyType ? 'Comment URL' : 'Topic'}</FormLabel>
+                    <FormLabel>Comment URL</FormLabel>
                     <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder={isReplyType ? "https://platform.com/post/comment" : "e.g., Sustainable Products"} 
-                      />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

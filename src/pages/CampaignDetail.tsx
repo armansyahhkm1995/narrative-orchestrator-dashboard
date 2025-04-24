@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PlusCircle, ArrowLeft, MessageSquare, SendHorizonal, Eye, Edit } from 'lucide-react';
@@ -118,11 +117,7 @@ const CampaignDetail = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Campaign Name</TableHead>
-                {isReplyType ? (
-                  <TableHead>Comment URL</TableHead>
-                ) : (
-                  <TableHead>Topic</TableHead>
-                )}
+                <TableHead>Comment URL</TableHead>
                 {isReplyType && <TableHead>Narrative Diversion</TableHead>}
                 <TableHead>Sentiment</TableHead>
                 <TableHead>Bots</TableHead>
@@ -133,13 +128,9 @@ const CampaignDetail = () => {
               {campaigns.map((campaign) => (
                 <TableRow key={campaign.id}>
                   <TableCell className="font-medium">{campaign.name}</TableCell>
-                  {isReplyType ? (
-                    <TableCell className="max-w-[300px] truncate">
-                      {campaign.topic}
-                    </TableCell>
-                  ) : (
-                    <TableCell>{campaign.topic}</TableCell>
-                  )}
+                  <TableCell className="max-w-[300px] truncate">
+                    {campaign.topic}
+                  </TableCell>
                   {isReplyType && (
                     <TableCell className="max-w-[300px] truncate">
                       {campaign.narrative}
@@ -207,7 +198,6 @@ const CampaignDetail = () => {
   );
 };
 
-// Helper function to get sentiment badge color
 const getSentimentClassName = (sentiment: string) => {
   switch (sentiment) {
     case 'positive':
