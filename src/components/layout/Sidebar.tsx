@@ -1,100 +1,62 @@
 
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import {
-  BarChart3,
-  Users,
-  FolderKanban,
+import { Link, useLocation } from "react-router-dom";
+import { 
+  FileText,
+  BarChart3, 
+  Users, 
+  PenTool, 
   Settings,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-  Home,
-  Bot,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/context/AuthContext';
+  Megaphone,
+  Bell
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
-interface SidebarItemProps {
-  icon: React.ElementType;
-  label: string;
-  to: string;
-  collapsed: boolean;
-}
-
-const SidebarItem: React.FC<SidebarItemProps> = ({ icon: Icon, label, to, collapsed }) => {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) =>
-        cn(
-          'flex items-center py-3 px-4 rounded-lg transition-colors',
-          collapsed ? 'justify-center px-3' : 'justify-start',
-          isActive
-            ? 'bg-buzzer-primary text-white'
-            : 'text-buzzer-secondary hover:bg-gray-100'
-        )
-      }
-    >
-      <Icon className={cn('h-5 w-5', collapsed ? 'mx-0' : 'mr-3')} />
-      {!collapsed && <span className="whitespace-nowrap">{label}</span>}
-    </NavLink>
-  );
-};
-
-const Sidebar: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(false);
-  const { logout } = useAuth();
-
-  const toggleSidebar = () => {
-    setCollapsed(!collapsed);
-  };
+const Sidebar = () => {
+  const location = useLocation();
+  
+  const menuItems = [
+    { icon: BarChart3, text: "Dashboard", path: "/" },
+    { icon: Users, text: "Bot Management", path: "/bots" },
+    { icon: Megaphone, text: "Campaigns", path: "/campaigns" },
+    { icon: FileText, text: "Prompt Management", path: "/prompts", isNew: true },
+    { icon: Bell, text: "Notifications", path: "/notifications" },
+    { icon: Settings, text: "Settings", path: "/settings" }
+  ];
 
   return (
-    <div
-      className={cn(
-        'flex flex-col bg-white border-r border-gray-200 h-screen transition-all duration-300',
-        collapsed ? 'w-16' : 'w-64'
-      )}
-    >
-      <div className="p-4 flex items-center justify-between border-b border-gray-200">
-        {!collapsed && (
-          <div className="flex items-center space-x-2">
-            <Bot className="h-6 w-6 text-buzzer-primary" />
-            <h1 className="text-xl font-bold text-buzzer-primary">Avatar Management</h1>
-          </div>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className={cn('rounded-full p-1', collapsed && 'ml-auto mr-auto')}
-          aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-        >
-          {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-        </Button>
+    <div className="hidden md:flex flex-col bg-background border-r w-64 h-screen px-4 py-6">
+      <div className="flex items-center mb-8 pl-2">
+        <PenTool size={28} className="text-purple-600 mr-2" />
+        <h1 className="text-xl font-bold">Narrative AI</h1>
       </div>
-
-      <div className="flex-1 flex flex-col gap-1 px-2 py-4 overflow-y-auto">
-        <SidebarItem icon={Home} label="Dashboard" to="/" collapsed={collapsed} />
-        <SidebarItem icon={Users} label="Bot Management" to="/bots" collapsed={collapsed} />
-        <SidebarItem icon={FolderKanban} label="Campaigns" to="/campaigns" collapsed={collapsed} />
-        <SidebarItem icon={Settings} label="Settings" to="/settings" collapsed={collapsed} />
-      </div>
-
-      <div className="mt-auto p-4 border-t border-gray-200">
-        <Button
-          variant="ghost"
-          className={cn(
-            'w-full flex items-center py-2 px-4 rounded-lg text-buzzer-secondary hover:bg-gray-100',
-            collapsed && 'justify-center px-0'
-          )}
-          onClick={logout}
-        >
-          <LogOut className={cn('h-5 w-5', collapsed ? 'mx-0' : 'mr-3')} />
-          {!collapsed && <span>Logout</span>}
-        </Button>
+      
+      <div className="space-y-1">
+        {menuItems.map((item, index) => {
+          const isActive = location.pathname === item.path || 
+            (item.path !== '/' && location.pathname.startsWith(item.path));
+          
+          return (
+            <Link
+              key={index}
+              to={item.path}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+                isActive 
+                  ? "bg-purple-100 text-purple-700 font-medium" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+              )}
+            >
+              <item.icon size={18} />
+              <span>{item.text}</span>
+              {item.isNew && (
+                <Badge className="ml-auto text-xs px-1.5 py-0.5 bg-green-500 text-white">
+                  New
+                </Badge>
+              )}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

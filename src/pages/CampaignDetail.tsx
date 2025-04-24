@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { PlusCircle, ArrowLeft, MessageSquare, SendHorizonal, Eye, Edit } from 'lucide-react';
@@ -65,8 +66,6 @@ const CampaignDetail = () => {
       </div>
       
       <p className="text-muted-foreground">{folder.description}</p>
-      
-      {folder.campaignType === 'reply' && folder.commentUrls && folder.commentUrls.length > 0}
       
       <Separator />
       

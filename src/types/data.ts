@@ -61,6 +61,23 @@ export interface Prompt {
   campaignId?: string;
 }
 
+export interface CounterPrompt {
+  id: string;
+  expertise: string;
+  topic: string;
+  counterPrompt: string;
+  createdAt: string;
+  isNew: boolean;
+}
+
+export interface GeneratedCounter {
+  id: string;
+  counterPrompt: string;
+  selected: boolean;
+  expertise?: string;
+  topic?: string;
+}
+
 // Dashboard Metrics Types
 export interface DashboardMetrics {
   botCount: number;
