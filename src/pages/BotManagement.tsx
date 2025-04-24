@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { 
   Table, 
@@ -35,6 +34,12 @@ import { MoreHorizontal, Plus, Edit, Trash2, ExternalLink, Check, X, Bot } from 
 import { useData } from '@/context/DataContext';
 import { Bot as BotType, SocialMediaPlatform } from '@/types/data';
 import { useToast } from '@/components/ui/use-toast';
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent
+} from "@/components/ui/tabs";
 
 const BotManagement = () => {
   const { bots, addBot, updateBot, deleteBot } = useData();
@@ -45,8 +50,8 @@ const BotManagement = () => {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [currentBot, setCurrentBot] = useState<BotType | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-  
-  // Form state
+  const [activeTab, setActiveTab] = useState<string>('');
+
   const [botName, setBotName] = useState('');
   const [botExpertise, setBotExpertise] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState<SocialMediaPlatform[]>([]);
@@ -59,8 +64,7 @@ const BotManagement = () => {
     Blog: '',
     Threads: ''
   });
-  
-  // Social Media Details
+
   const [socialMediaDetails, setSocialMediaDetails] = useState({
     X: {
       username: '',
@@ -114,7 +118,6 @@ const BotManagement = () => {
     }
   });
 
-  // Platform options
   const platforms: SocialMediaPlatform[] = ['X', 'Instagram', 'Facebook', 'TikTok', 'YouTube', 'Blog', 'Threads'];
 
   const handleAddBot = () => {
@@ -158,7 +161,6 @@ const BotManagement = () => {
       Blog: '',
       Threads: ''
     });
-    // Reset all social media details
     setSocialMediaDetails({
       X: {
         username: '',
@@ -282,7 +284,6 @@ const BotManagement = () => {
     
     setSocialMediaLinks(initialLinks);
 
-    // Load social media details if they exist
     if (bot.socialMediaDetails) {
       const currentDetails = { ...socialMediaDetails };
       Object.keys(bot.socialMediaDetails).forEach((platform) => {
@@ -726,6 +727,37 @@ const BotManagement = () => {
     }
   };
 
+  const renderSocialMediaDetailsTabs = () => {
+    if (selectedPlatforms.length === 0) {
+      return (
+        <div className="text-muted-foreground text-sm py-4">
+          Select social media platforms to configure their details.
+        </div>
+      );
+    }
+
+    return (
+      <Tabs defaultValue={selectedPlatforms[0]} className="w-full" onValueChange={setActiveTab}>
+        <TabsList className="w-full flex flex-wrap">
+          {selectedPlatforms.map(platform => (
+            <TabsTrigger 
+              key={platform} 
+              value={platform}
+              className="flex-grow"
+            >
+              {platform}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        {selectedPlatforms.map(platform => (
+          <TabsContent key={platform} value={platform} className="mt-4">
+            {renderSocialMediaDetailsForm(platform)}
+          </TabsContent>
+        ))}
+      </Tabs>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
@@ -745,7 +777,6 @@ const BotManagement = () => {
               </DialogDescription>
             </DialogHeader>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Main Bot Info - Left Column */}
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Bot Name</Label>
@@ -780,8 +811,15 @@ const BotManagement = () => {
                             onCheckedChange={(checked) => {
                               if (checked) {
                                 setSelectedPlatforms([...selectedPlatforms, platform]);
+                                if (!activeTab) {
+                                  setActiveTab(platform);
+                                }
                               } else {
                                 setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
+                                if (activeTab === platform) {
+                                  const remainingPlatforms = selectedPlatforms.filter(p => p !== platform);
+                                  setActiveTab(remainingPlatforms.length > 0 ? remainingPlatforms[0] : '');
+                                }
                               }
                             }}
                           />
@@ -801,22 +839,9 @@ const BotManagement = () => {
                 </div>
               </div>
               
-              {/* Social Media Details - Right Column */}
-              <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+              <div className="space-y-4 py-4">
                 <h2 className="text-lg font-semibold">Social Media Details</h2>
-                {selectedPlatforms.length > 0 ? (
-                  <div className="space-y-6 divide-y divide-border">
-                    {selectedPlatforms.map(platform => (
-                      <div key={`details-${platform}`} className="pt-4 first:pt-0">
-                        {renderSocialMediaDetailsForm(platform)}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-muted-foreground text-sm py-4">
-                    Select social media platforms to configure their details.
-                  </div>
-                )}
+                {renderSocialMediaDetailsTabs()}
               </div>
             </div>
             <DialogFooter className="mt-4">
@@ -902,7 +927,6 @@ const BotManagement = () => {
         </Table>
       </div>
 
-      {/* Edit Bot Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={handleEditDialogOpenChange}>
         <DialogContent className="w-[90vw] max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -912,7 +936,6 @@ const BotManagement = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Main Bot Info - Left Column */}
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-name">Bot Name</Label>
@@ -947,8 +970,15 @@ const BotManagement = () => {
                           onCheckedChange={(checked) => {
                             if (checked) {
                               setSelectedPlatforms([...selectedPlatforms, platform]);
+                              if (!activeTab) {
+                                setActiveTab(platform);
+                              }
                             } else {
                               setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
+                              if (activeTab === platform) {
+                                const remainingPlatforms = selectedPlatforms.filter(p => p !== platform);
+                                setActiveTab(remainingPlatforms.length > 0 ? remainingPlatforms[0] : '');
+                              }
                             }
                           }}
                         />
@@ -968,22 +998,9 @@ const BotManagement = () => {
               </div>
             </div>
             
-            {/* Social Media Details - Right Column */}
-            <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+            <div className="space-y-4 py-4">
               <h2 className="text-lg font-semibold">Social Media Details</h2>
-              {selectedPlatforms.length > 0 ? (
-                <div className="space-y-6 divide-y divide-border">
-                  {selectedPlatforms.map(platform => (
-                    <div key={`edit-details-${platform}`} className="pt-4 first:pt-0">
-                      {renderSocialMediaDetailsForm(platform)}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-muted-foreground text-sm py-4">
-                  Select social media platforms to configure their details.
-                </div>
-              )}
+              {renderSocialMediaDetailsTabs()}
             </div>
           </div>
           <DialogFooter className="mt-4">
@@ -993,7 +1010,6 @@ const BotManagement = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Bot Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={handleDeleteDialogOpenChange}>
         <DialogContent>
           <DialogHeader>
@@ -1009,7 +1025,6 @@ const BotManagement = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Bot Details Dialog */}
       <Dialog open={isDetailDialogOpen} onOpenChange={handleDetailDialogOpenChange}>
         <DialogContent className="w-[90vw] max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
